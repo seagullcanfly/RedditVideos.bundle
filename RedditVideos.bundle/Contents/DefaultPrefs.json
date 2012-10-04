@@ -1,0 +1,23 @@
+[
+    {
+        "id": "username",
+        "type": "text",
+        "label": "Username",
+        "default": "",
+        "youtube_user": "" 
+    },
+    {
+        "id": "password",
+        "type": "text",
+        "label": "Password",
+        "default": "",
+        "option": "hidden" 
+    },
+    {
+        "id": "quality",
+        "type": "enum",
+        "label": "Quality",
+        "values": ["Auto", "Low", "Medium", "High"],
+        "default": "Auto"
+    }
+]
