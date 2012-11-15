@@ -4,11 +4,7 @@
 def list_to_string(l):
     ''' We convert the list to a string
     to create a summary for the field.'''
-    s = ''
-    for element in sorted(l):
-        s += ' * '
-        s += element
-    return s
+    return ' * '.join(sorted(l))
 
 
 def good_url(url):
