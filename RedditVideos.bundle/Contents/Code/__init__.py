@@ -66,7 +66,14 @@ This is just a menu for entering in favorites.
     """
     oc = ObjectContainer()
     oc.add(InputDirectoryObject(key=Callback(enter_favorite),
-                                title='enter a subreddit',
+                                title='Add a Custom Favorite',
+                                summary='Enter the name of a subreddit.' +
+                                '\nDo not include "r/".  e.g., "r/videos"' +
+                                ' should be entered as "videos"',
+                                prompt="enter the name of a subreddit",
+                                thumb=R(ICON)))
+    oc.add(InputDirectoryObject(key=Callback(delete_favorite),
+                                title='Delete a Custom Favorite',
                                 summary='Enter the name of a subreddit.' +
                                 '\nDo not include "r/".  e.g., "r/videos"' +
                                 ' should be entered as "videos"',
@@ -188,7 +195,7 @@ def enter_manual(query):
     return oc
 
 def enter_favorite(query):
-    oc = ObjectContainer()
+    #oc = ObjectContainer()
     try:
         custom_faves = Dict['favorites']
         Log ('Favorites was opened and it is %s' % custom_faves)
@@ -198,7 +205,18 @@ def enter_favorite(query):
     custom_faves.append(query)
     Dict['favorites'] = custom_faves
     Dict.Save()
-    return oc
+    #return oc
+
+
+def delete_favorite(query):
+    current_list = Dict['favorites']
+    try:
+        current_list.remove(query)
+    except ValueError:
+        Log ('subreddit was not already stored as a favorite')
+    Dict['favorites'] = current_list
+    Dict.Save()
+
 
 def get_domains():
     """
