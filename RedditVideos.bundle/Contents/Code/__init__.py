@@ -6,7 +6,7 @@ from categories import reddit_categories, master_list, domain_list
 NAME = "Reddit Videos"
 ART = 'art-default.jpg'
 ICON = 'icon-default.png'
-USER_AGENT = 'seagullcanfly on reddit Reddit Videos Plex plugin' # https://github.com/reddit/reddit/wiki/API
+USER_AGENT = 'seagullcanfly on Reddit RedditVideos Plex plugin' # https://github.com/reddit/reddit/wiki/API
 
 def Start():
     Plugin.AddViewGroup('List', viewMode='List', mediaType='items')
@@ -36,7 +36,7 @@ def MainMenu():
                                 prompt="enter the name of a subreddit",
                                 thumb=R(ICON)))
 
-    # Custom Favorites
+    # Custom Favorites Menu
     oc.add(DirectoryObject(key=Callback(custom_favorites),
                                 title='Custom Favorites',
                                 summary='This is where you can store your favorite subreddits',))
