@@ -1,11 +1,12 @@
 ##Reddit Videos
 
-This is the official Reddit Videos Plex plugin development git.
-Current Features:
-Manually Enter any subreddit to look for videos.
-Maintain a list of customizable favorite subreddits.
-Browse hard-coded subreddits.
-View the most popular videos from specific domains like youtube.com or ted.com irrespective of subreddit.
+*This is the official Reddit Videos Plex plugin development git.*
+
+###Current Features:
+2. Manually Enter any subreddit to look for videos.
+3. Maintain a list of customizable favorite subreddits.
+4. Browse hard-coded subreddits.
+5. View the most popular videos from specific domains like youtube.com or ted.com irrespective of subreddit.
 
 Installation:
 
