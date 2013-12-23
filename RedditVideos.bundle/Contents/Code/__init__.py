@@ -231,6 +231,10 @@ def custom_favorites():
         Log('Creating an empty list since there were no stored favorites.')
         custom_faves = []
         Dict['favorites'] = custom_faves
+    if not custom_faves:
+        Log('Creating an empty list since there were no stored favorites.')
+        custom_faves = ['enterfavoritesubreddits']
+        Dict['favorites'] = custom_faves
     for subreddit in custom_faves:
         url = 'http://www.reddit.com/r/%s/.json' % subreddit
         title = 'r/%s' % subreddit
