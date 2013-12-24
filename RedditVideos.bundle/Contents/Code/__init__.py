@@ -223,16 +223,12 @@ def custom_favorites():
                                         ' should be entered as "videos"',
                                 prompt="enter the name of a subreddit",
                                 thumb=R(ICON)))
-    Log('the value of dict favorites is %s' % Dict['favorites'])
     try:
         custom_faves = Dict['favorites']
-        Log('The stored dictionary was opened and the result was %s' % custom_faves)
     except:
-        Log('Creating an empty list since there were no stored favorites.')
         custom_faves = []
         Dict['favorites'] = custom_faves
     if not custom_faves:
-        Log('Creating an empty list since there were no stored favorites.')
         custom_faves = ['enterfavoritesubreddits']
         Dict['favorites'] = custom_faves
     for subreddit in custom_faves:
@@ -251,9 +247,7 @@ def enter_favorite(query):
     """
     try:
         custom_faves = Dict['favorites']
-        Log('Favorites was opened and it is %s' % custom_faves)
     except:
-        Log('Apparently there are no favorites in the dictionary %s' % Dict['favorites'])
         custom_faves = []
     custom_faves.append(query)
     Dict['favorites'] = custom_faves
