@@ -4,8 +4,6 @@ from utilities import good_url
 from categories import reddit_categories, master_list, domain_list
 
 NAME = "Reddit Videos"
-ART = 'art-default.jpg'
-ICON = 'icon-default.png'
 USER_AGENT = 'seagullcanfly on Reddit RedditVideos Plex plugin' # https://github.com/reddit/reddit/wiki/API
 
 
@@ -13,16 +11,10 @@ def Start():
     """
 Mandatory to include.
     """
-    Plugin.AddViewGroup('List', viewMode='List', mediaType='items')
-    Plugin.AddViewGroup('InfoList', viewMode='InfoList', mediaType='items')
-    ObjectContainer.art = R(ART)
     ObjectContainer.title1 = NAME
-    DirectoryObject.thumb = R(ICON)
-    NextPageObject.thumb = R(ICON)
-    VideoClipObject.thumb = R(ICON)
 
 
-@handler('/video/redditvideos', 'Reddit Videos', thumb=ICON, art=ART)
+@handler('/video/redditvideos', 'Reddit Videos')
 def MainMenu():
     """
     Creates the following menu:
@@ -32,7 +24,7 @@ def MainMenu():
     All domains
     Categories
     """
-    oc = ObjectContainer(view_group='InfoList')
+    oc = ObjectContainer()
     # Enter Manual Menu
     oc.add(InputDirectoryObject(key=Callback(enter_manual),
                                 title='enter a subreddit',
@@ -40,8 +32,7 @@ def MainMenu():
                                         'Enter the name of a subreddit.' +
                                         '\nDo not include "r/".  e.g., "r/videos"' +
                                         ' should be entered as "videos"',
-                                prompt="enter the name of a subreddit",
-                                thumb=R(ICON)))
+                                prompt="enter the name of a subreddit"))
 
     # Custom Favorites Menu
     oc.add(DirectoryObject(key=Callback(custom_favorites),
@@ -214,15 +205,13 @@ def custom_favorites():
                                 summary='Enter the name of a subreddit.' +
                                         '\nDo not include "r/".  e.g., "r/videos"' +
                                         ' should be entered as "videos"',
-                                prompt="enter the name of a subreddit",
-                                thumb=R(ICON)))
+                                prompt="enter the name of a subreddit"))
     oc.add(InputDirectoryObject(key=Callback(delete_favorite),
                                 title='Delete a Custom Favorite',
                                 summary='Enter the name of a subreddit.' +
                                         '\nDo not include "r/".  e.g., "r/videos"' +
                                         ' should be entered as "videos"',
-                                prompt="enter the name of a subreddit",
-                                thumb=R(ICON)))
+                                prompt="enter the name of a subreddit"))
     try:
         custom_faves = Dict['favorites']
     except:
