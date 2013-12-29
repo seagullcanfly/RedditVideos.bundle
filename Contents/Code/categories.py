@@ -6,7 +6,7 @@ gaming = ['games',  'gaming',  'tf2',  'starcraft',
           'leagueoflegends', 'minecraft', 'guildwars2',
           'masseffect', 'runescape', 'blackops2',
           'indiegaming', 'wow', 'planetside', 'dayz', 'skyrim']
-music = ['blues', 'bluegrass', 'jazz', 'music'
+music = ['blues', 'bluegrass', 'jazz', 'music',
          'electronicmusic', 'ska', 'classicalmusic',
          'listentothis', 'metal', 'hiphopheads']
 technology = ['linux', 'technology']
