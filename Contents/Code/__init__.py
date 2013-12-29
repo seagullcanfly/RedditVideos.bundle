@@ -132,7 +132,6 @@ def videos(url, title, count=0, limit=25, after='', sort=None):
     url += '?count=%d&limit=%d&after=%s' % (count, limit, after)
     if sort:
         url += '&sort=top&t=%s' % sort
-    Log(url)
     search_page = JSON.ObjectFromURL(url, sleep=2.0, cacheTime=600, headers={'User-Agent': USER_AGENT})
 
     @parallelize
