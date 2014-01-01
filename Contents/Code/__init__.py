@@ -112,7 +112,7 @@ def MultiMenu():
     oc.add(DirectoryObject(key=Callback(videos,
                                         url=multi_reddit_url,
                                         title="All Discovery Subreddits",
-                                        limit=limit),
+                                        limit=100),
                            title="All Discovery Subreddits"))
     content = HTML.ElementFromURL(multi_reddit_url)
     #page = HTML.ElementFromString(content)
