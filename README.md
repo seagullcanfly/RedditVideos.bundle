@@ -21,11 +21,13 @@ The official version can be installed directly from Plex.  Some of the changes n
 The development version can be enabled by following the instructions below:
 
 #####Instructions
- 1. Replace the @handler line below with 2nd handler **(should already be edited, but check if you need to troubleshoot)**
- 2. Rename the entire bundle to RedditVideosDev.bundle to prevent Plex from automatically reverting to the official version.
- 3. Place the RedditVideosDev.bundle folder and all of its contents in your Plex Media Server Plug-Ins directory.
+ 1. Rename the entire bundle to RedditVideosDev.bundle to prevent Plex from automatically reverting to the official version.
+ 2. Place the RedditVideosDev.bundle folder and all of its contents in your Plex Media Server Plug-Ins directory.
 
- 1st handler
- @handler('/video/redditvideos', 'Reddit Videos')
- 2nd handler
- @handler('/video/redditvideosdev', 'Dev Reddit Videos')
+#####Troubleshooting
+In __init__.py, look for a line that begins with @handler.  The line must match the 2nd handler written below.
+
+1st handler
+* @handler('/video/redditvideos', 'Reddit Videos')
+2nd handler
+* @handler('/video/redditvideosdev', 'Dev Reddit Videos')
