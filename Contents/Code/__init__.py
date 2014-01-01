@@ -15,16 +15,20 @@ Mandatory to include.
 
 # DEVELOPMENT SECTION
 #
-# 1.) Remove the # from the 2nd handler
-# 2.) Place a # in front of the 1st handler
-# 3.) Rename the entire bundle to RedditVideosDev.bundle
-# to prevent Plex from automatically
-# reverting to the official version.
+# 1.) Replace the @handler line below with 2nd handler
+# 2.) Rename the entire bundle to RedditVideosDev.bundle to prevent
+#     Plex from automatically reverting to the official version.
+# 3.) Replace the @handler line with the 1st handler and rename the
+#     folder to RedditVideos.bundle to restore the channel.
+# 4.) Place the .bundle folder and all of its contents in your
+#     Plex Media Server directory.
+#
 # 1st handler
-@handler('/video/redditvideos', 'Reddit Videos')
+# @handler('/video/redditvideos', 'Reddit Videos')
 # 2nd handler
-#handler('/video/redditvideosdev', 'Dev Reddit Videos')
+# @handler('/video/redditvideosdev', 'Dev Reddit Videos')
 
+@handler('/video/redditvideosdev', 'Dev Reddit Videos')
 def MainMenu():
     """
     Creates the following menu:
@@ -37,7 +41,7 @@ def MainMenu():
     oc = ObjectContainer()
     # Enter Manual Menu
     oc.add(InputDirectoryObject(key=Callback(enter_manual),
-                                title='enter a subreddit',
+                                title='Enter a subreddit',
                                 summary='Manually entered subreddits are not saved.' +
                                         'Enter the name of a subreddit.' +
                                         '\nDo not include "r/".  e.g., "r/videos"' +
@@ -50,24 +54,30 @@ def MainMenu():
                            summary='This is where you can store your favorite subreddits', ))
 
     # All Subreddits Menu
-    oc.add(DirectoryObject(key=Callback(LiveMenu),
-                           title="All subreddits",
-                           summary="This is just a list of subreddits included by default.  There" +
-                                   "are plenty of other subreddits to add to your favorites."))
+    # oc.add(DirectoryObject(key=Callback(LiveMenu),
+    #                        title="All subreddits",
+    #                        summary="This is just a list of subreddits included by default.  There" +
+    #                                "are plenty of other subreddits to add to your favorites."))
     # All Domains Menu
     oc.add(DirectoryObject(key=Callback(get_domains),
                            title='All Domains',
                            summary='This is a neat trick with reddit.  You can view the top videos' +
                                    'regardless of what subreddit they are in just by the domain they come' +
                                    'from.'))
-    # Start adding menus for each category
-    for element in sorted(reddit_categories.keys()):
-        title = element
-        c_list = reddit_categories[element]['c_list']
-        summary = reddit_categories[element]['summary']
-        oc.add(DirectoryObject(key=Callback(LiveMenu, category=c_list),
-                               title=title,
-                               summary=summary))
+    # # Start adding menus for each category
+    # for element in sorted(reddit_categories.keys()):
+    #     title = element
+    #     c_list = reddit_categories[element]['c_list']
+    #     summary = reddit_categories[element]['summary']
+    #     oc.add(DirectoryObject(key=Callback(LiveMenu, category=c_list),
+    #                            title=title,
+    #                            summary=summary))
+    # MultiReddit Menu
+    oc.add(DirectoryObject(key=Callback(MultiMenu),
+                           title="MultiSubreddits",
+                           summary="This is an automatic list maintained by u/efidol and" +
+                                   "u/seagullcanfly."))
+
     return oc
 
 
@@ -85,6 +95,33 @@ def LiveMenu(category=None):
         url = 'http://www.reddit.com/r/%s/.json' % subreddit
         title = 'r/%s' % subreddit
 
+        oc.add(DirectoryObject(key=Callback(ViewSort,
+                                            url=url,
+                                            title=title,
+                                            limit=100),
+                               title=title))
+    return oc
+
+
+def MultiMenu():
+    """
+    The MultiMenu is an automatic way of maintaining popular subreddits
+    and categories.
+    """
+    oc = ObjectContainer()
+    multi_reddit_url = "http://www.reddit.com/user/efidol/m/cordfreetv"
+    content = HTML.ElementFromURL(multi_reddit_url)
+    #page = HTML.ElementFromString(content)
+    multi_subreddits = content.xpath('//ul[@class="subreddits"]//li/a/text()')
+    clean_subreddits = []
+    for sub in multi_subreddits:
+        sub = sub.split('r/')[-1]
+        clean_subreddits.append(sub.title())
+    subreddits = clean_subreddits
+    Log(subreddits)
+    for subreddit in sorted(subreddits):
+        url = 'http://www.reddit.com/r/%s/.json' % subreddit
+        title = 'r/%s' % subreddit
         oc.add(DirectoryObject(key=Callback(ViewSort,
                                             url=url,
                                             title=title,
