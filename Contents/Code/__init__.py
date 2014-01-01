@@ -109,6 +109,11 @@ def MultiMenu():
     """
     oc = ObjectContainer()
     multi_reddit_url = "http://www.reddit.com/user/efidol/m/cordfreetv"
+    oc.add(DirectoryObject(key=Callback(videos,
+                                        url=multi_reddit_url,
+                                        title="All Discovery Subreddits",
+                                        limit=limit),
+                           title="All Discovery Subreddits"))
     content = HTML.ElementFromURL(multi_reddit_url)
     #page = HTML.ElementFromString(content)
     multi_subreddits = content.xpath('//ul[@class="subreddits"]//li/a/text()')
