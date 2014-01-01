@@ -2,12 +2,12 @@
 *This is the official Reddit Videos Plex plugin development git.*
 
 ###Current Features:
-2. Manually Enter any subreddit to look for videos.
-3. Maintain a list of customizable favorite subreddits.
-4. Browse hard-coded subreddits.
-5. View the most popular videos from specific domains like youtube.com or ted.com irrespective of subreddit.
-6. Store and delete custom favorite subreddits within the app
-7. Sort the subreddits by hot, new, or top (all time, month, week, day, and hour)
+* Manually Enter any subreddit to look for videos.
+* Maintain a list of customizable favorite subreddits.
+* Browse hard-coded subreddits.
+* View the most popular videos from specific domains like youtube.com or ted.com irrespective of subreddit.
+* Store and delete custom favorite subreddits within the app
+* Sort the subreddits by hot, new, or top (all time, month, week, day, and hour)
 
 ###Upcoming Features:
 * Categories automatically updated and replaced by multireddits
