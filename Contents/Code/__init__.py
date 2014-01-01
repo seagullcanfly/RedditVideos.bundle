@@ -110,7 +110,7 @@ def MultiMenu():
     oc = ObjectContainer()
     multi_reddit_url = "http://www.reddit.com/user/efidol/m/cordfreetv"
     oc.add(DirectoryObject(key=Callback(videos,
-                                        url=multi_reddit_url,
+                                        url=multi_reddit_url+".json",
                                         title="All Discovery Subreddits",
                                         limit=100),
                            title="All Discovery Subreddits"))
