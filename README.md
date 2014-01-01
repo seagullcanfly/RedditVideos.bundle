@@ -5,11 +5,11 @@
 * Manually Enter any subreddit to look for videos.
 * Maintain a list of customizable favorite subreddits.
 * ~~Browse hard-coded subreddits.~~
-  *(in official channel, not in dev channel) 1/1/2014
+  * (in official channel, not in dev channel) 1/1/2014
 * View the most popular videos from specific domains like youtube.com or ted.com irrespective of subreddit.
 * Sort the subreddits by hot, new, or top (all time, month, week, day, and hour)
 * Discover subreddits from user-maintained multi-reddit (replaces hard-coded subreddits)
-  *(in dev channel only)
+  * (in dev channel only)
 
 ###Upcoming Features:
 * Support for images
