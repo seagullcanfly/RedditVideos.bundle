@@ -27,7 +27,8 @@ The development version can be enabled by following the instructions below:
 #####Troubleshooting
 In __init__.py, look for a line that begins with @handler.  The line must match the 2nd handler written below.
 
-1st handler +
+#####1st handler
 * @handler('/video/redditvideos', 'Reddit Videos')
-2nd handler
+
+#####2nd handler
 * @handler('/video/redditvideosdev', 'Dev Reddit Videos')
