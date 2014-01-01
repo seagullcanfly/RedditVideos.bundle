@@ -74,9 +74,8 @@ def MainMenu():
     #                            summary=summary))
     # MultiReddit Menu
     oc.add(DirectoryObject(key=Callback(MultiMenu),
-                           title="MultiSubreddits",
-                           summary="This is an automatic list maintained by u/efidol and" +
-                                   "u/seagullcanfly."))
+                           title="Subreddit Discovery",
+                           summary="This is an automatic list maintained by u/efidol and u/seagullcanfly."))
 
     return oc
 

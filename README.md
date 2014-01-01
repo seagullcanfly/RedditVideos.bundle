@@ -18,14 +18,14 @@
 ###Installation:
 The official version can be installed directly from Plex.  Some of the changes noted here may not be available immediately until the changes have been merged with Plex's github account.
 
-The development version can enabled by editing __init__.py.  Instructions to edit it are in the file, but they also follow:
+The development version can enabled by editing "__init__.py".  Instructions to edit it are in the file, but they also follow:
 
 DEVELOPMENT SECTION
 
  1. Replace the @handler line below with 2nd handler
  2. Rename the entire bundle to RedditVideosDev.bundle to prevent Plex from automatically reverting to the official version.
  3. Replace the @handler line with the 1st handler and rename the folder to RedditVideos.bundle to restore the channel.
- 4. Place the .bundle folder and all of its contents in your Plex Media Server directory.
+ 4. Place the .bundle folder and all of its contents in your Plex Media Server Plug-Ins directory.
 
  1st handler
  @handler('/video/redditvideos', 'Reddit Videos')
