@@ -22,13 +22,10 @@ The development version can enabled by editing __init__.py.  Instructions to edi
 
 DEVELOPMENT SECTION
 
- 1.) Replace the @handler line below with 2nd handler
- 2.) Rename the entire bundle to RedditVideosDev.bundle to prevent
-     Plex from automatically reverting to the official version.
- 3.) Replace the @handler line with the 1st handler and rename the
-     folder to RedditVideos.bundle to restore the channel.
- 4.) Place the .bundle folder and all of its contents in your
-     Plex Media Server directory.
+ 1. Replace the @handler line below with 2nd handler
+ 2. Rename the entire bundle to RedditVideosDev.bundle to prevent Plex from automatically reverting to the official version.
+ 3. Replace the @handler line with the 1st handler and rename the folder to RedditVideos.bundle to restore the channel.
+ 4. Place the .bundle folder and all of its contents in your Plex Media Server directory.
 
  1st handler
  @handler('/video/redditvideos', 'Reddit Videos')
