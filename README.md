@@ -19,6 +19,5 @@
 ###Installation:
 This can be installed directly from Plex.  Some of the changes noted here may not be available immediately until the changes have been merged with Plex's github account.
 
-If this plugin bundle is placed in Plex Media Server's Plug-ins folder, it will most likely be automatically reverted to the official Plex Reddit Videos version.  If you want to install the latest development version, install the [Reddit Videos Dev repository](https://github.com/seagullcanfly/RedditVideosDev) instead.
-
-![reddit logo](https://github.com/seagullcanfly/RedditVideos/blob/master/RedditVideos.bundle/Contents/Resources/icon-default.png?raw=true "Reddit Logo")
+If this plugin bundle is placed in Plex Media Server's Plug-ins folder, it will most likely be automatically reverted to the official Plex Reddit Videos version.
+Look into using a symlink if you don't want the changes to revert.
