@@ -13,8 +13,18 @@ Mandatory to include.
     """
     ObjectContainer.title1 = NAME
 
-
+# DEVELOPMENT SECTION
+#
+# 1.) Remove the # from the 2nd handler
+# 2.) Place a # in front of the 1st handler
+# 3.) Rename the entire bundle to RedditVideosDev.bundle
+# to prevent Plex from automatically
+# reverting to the official version.
+# 1st handler
 @handler('/video/redditvideos', 'Reddit Videos')
+# 2nd handler
+#handler('/video/redditvideosdev', 'Dev Reddit Videos')
+
 def MainMenu():
     """
     Creates the following menu:
