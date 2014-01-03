@@ -19,9 +19,7 @@ def Start():
 #     ( The dev branch has the correct handler by default. )
 # 2.) Rename the entire bundle to RedditVideosDev.bundle to prevent
 #     Plex from automatically reverting to the official version.
-# 3.) Replace the @handler line with the 1st handler and rename the
-#     folder to RedditVideos.bundle to restore the channel.
-# 4.) Place the .bundle folder and all of its contents in your
+# 3.) Place the .bundle folder and all of its contents in your
 #     Plex Media Server directory.
 #
 # 1st handler
@@ -43,7 +41,7 @@ def MainMenu():
 
     # Videos Menu
     oc.add(DirectoryObject
-        (key=Callback(ViewSort,
+        (key=Callback(view_sort,
                       url='http://www.reddit.com/r/videos/.json',
                       title='Videos Subreddit'),
         title='Videos Subreddit'))
@@ -71,53 +69,16 @@ def MainMenu():
 
     # Subreddit Discovery Menu
     oc.add(DirectoryObject
-        (key=Callback(MultiMenu),
+        (key=Callback(subreddit_discovery),
          title="Subreddit Discovery",
          summary="This is an automatic list maintained by u/efidol and u/seagullcanfly."))
-
-######### DEPRECATED MENUS ##############################################
-    # All Subreddits Menu
-    # oc.add(DirectoryObject(key=Callback(LiveMenu),
-    #                        title="All subreddits",
-    #                        summary="This is just a list of subreddits included by default.  There" +
-    #                                "are plenty of other subreddits to add to your favorites."))
-    # # Start adding menus for each category
-    # for element in sorted(reddit_categories.keys()):
-    #     title = element
-    #     c_list = reddit_categories[element]['c_list']
-    #     summary = reddit_categories[element]['summary']
-    #     oc.add(DirectoryObject(key=Callback(LiveMenu, category=c_list),
-    #                            title=title,
-    #                            summary=summary))
     return oc
 
 
-def LiveMenu(category=None):
+def subreddit_discovery():
     """
-    The LiveMenu shows the name of the subreddit before the next directory
-    which only shows the sorting options by hot, top, and new.
-    """
-    oc = ObjectContainer()
-    if not category:
-        subreddits = master_list
-    else:
-        subreddits = category
-    for subreddit in sorted(subreddits):
-        url = 'http://www.reddit.com/r/%s/.json' % subreddit
-        title = 'r/%s' % subreddit
-        oc.add(DirectoryObject
-            (key=Callback(ViewSort,
-                          url=url,
-                          title=title,
-                          limit=100),
-             title=title))
-    return oc
-
-
-def MultiMenu():
-    """
-    The MultiMenu is an automatic way of maintaining popular subreddits
-    and categories.
+    subreddit_discovery automatically pulls a maintained list of popular subreddits
+    from a published multireddit.
     """
     oc = ObjectContainer()
     multi_reddit_url = "http://www.reddit.com/user/efidol/m/cordfreetv"
@@ -138,7 +99,7 @@ def MultiMenu():
         url = 'http://www.reddit.com/r/%s/.json' % subreddit
         title = 'r/%s' % subreddit
         oc.add(DirectoryObject
-            (key=Callback(ViewSort,
+            (key=Callback(view_sort,
                           url=url,
                           title=title,
                           limit=100),
@@ -146,7 +107,7 @@ def MultiMenu():
     return oc
 
 
-def ViewSort(url, title, limit=100):
+def view_sort(url, title, limit=100):
     """
     Currently all videos can be sorted by hot, new, and top.  Top includes all time,
     month, week, day, and hour.
@@ -303,7 +264,7 @@ def custom_favorites():
         url = 'http://www.reddit.com/r/%s/.json' % subreddit
         title = 'r/%s' % subreddit
         oc.add(DirectoryObject
-            (key=Callback(ViewSort,
+            (key=Callback(view_sort,
                           url=url,
                           title=title),
              title=title))
@@ -362,8 +323,46 @@ def enter_manual(query):
     url = 'http://www.reddit.com/r/%s/.json' % query
     title = 'r/' + query
     oc.add(DirectoryObject
-        (key=Callback(ViewSort,
+        (key=Callback(view_sort,
                       url=url,
                       title=title),
          title=title))
     return oc
+
+
+# ######## Deprecated Call ###################
+# def LiveMenu(category=None):
+#     """
+#     The LiveMenu shows the name of the subreddit before the next directory
+#     which only shows the sorting options by hot, top, and new.
+#     """
+#     oc = ObjectContainer()
+#     if not category:
+#         subreddits = master_list
+#     else:
+#         subreddits = category
+#     for subreddit in sorted(subreddits):
+#         url = 'http://www.reddit.com/r/%s/.json' % subreddit
+#         title = 'r/%s' % subreddit
+#         oc.add(DirectoryObject
+#             (key=Callback(view_sort,
+#                           url=url,
+#                           title=title,
+#                           limit=100),
+#              title=title))
+#     return oc
+#
+# ######## DEPRECATED MENUS ##############################################
+#     All Subreddits Menu
+#     oc.add(DirectoryObject(key=Callback(LiveMenu),
+#                            title="All subreddits",
+#                            summary="This is just a list of subreddits included by default.  There" +
+#                                    "are plenty of other subreddits to add to your favorites."))
+#     # Start adding menus for each category
+#     for element in sorted(reddit_categories.keys()):
+#         title = element
+#         c_list = reddit_categories[element]['c_list']
+#         summary = reddit_categories[element]['summary']
+#         oc.add(DirectoryObject(key=Callback(LiveMenu, category=c_list),
+#                                title=title,
+#                                summary=summary))
