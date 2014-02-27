@@ -13,21 +13,7 @@ def Start():
     """
     ObjectContainer.title1 = NAME
 
-# DEVELOPMENT SECTION
-#
-# 1.) Replace the @handler line below with 2nd handler
-#     ( The dev branch has the correct handler by default. )
-# 2.) Rename the entire bundle to RedditVideosDev.bundle to prevent
-#     Plex from automatically reverting to the official version.
-# 3.) Place the .bundle folder and all of its contents in your
-#     Plex Media Server directory.
-#
-# 1st handler
-# @handler('/video/redditvideos', 'Reddit Videos')
-# 2nd handler
-# @handler('/video/redditvideosdev', 'Dev Reddit Videos')
-
-@handler('/video/redditvideosdev', 'Dev Reddit Videos')
+@handler('/video/redditvideos', 'Reddit Videos')
 def MainMenu():
     """
     Creates the following menu:
