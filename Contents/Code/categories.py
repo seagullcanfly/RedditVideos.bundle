@@ -1,4 +1,7 @@
 # Reddit Video Categories
+# with subreddit discovery the categories are no longer used
+# the only thin being used now is the domain_list which could
+# obviously just be included in __init__.py instead.
 
 from utilities import list_to_string,  create_list
 
