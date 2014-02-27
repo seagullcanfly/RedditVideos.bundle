@@ -60,6 +60,13 @@ def MainMenu():
                  '\nDo not include "r/".  e.g., "r/videos" should be entered as "videos"',
          prompt="enter the name of a subreddit"))
 
+    # Search Reddit
+    oc.add(InputDirectoryObject
+        (key=Callback(domain_search),
+         title='Search Reddit',
+         summary='This will search all youtube vidoes uploaded to reddit.',
+         prompt="enter your search term"))
+
     # All Domains Menu
     oc.add(DirectoryObject
         (key=Callback(get_domains),
@@ -69,26 +76,34 @@ def MainMenu():
 
     # Subreddit Discovery Menu
     oc.add(DirectoryObject
-        (key=Callback(subreddit_discovery),
+        (key=Callback(subreddit_discovery,
+        url= "http://www.reddit.com/user/seagullcanfly/m/plexsubreddits"),
          title="Subreddit Discovery",
          summary="This is an automatic list maintained by u/efidol and u/seagullcanfly."))
+
+    # Gaming Subreddits
+    oc.add(DirectoryObject
+        (key=Callback(subreddit_discovery,
+        url="http://www.reddit.com/user/seagullcanfly/m/gamingvideos"),
+         title="Gaming Subreddits",
+         summary="This is an automatic list maintained by u/seagullcanfly."))
     return oc
 
 
-def subreddit_discovery():
+def subreddit_discovery(url):
     """
     subreddit_discovery automatically pulls a maintained list of popular subreddits
     from a published multireddit.
     """
     oc = ObjectContainer()
-    multi_reddit_url = "http://www.reddit.com/user/efidol/m/cordfreetv"
+    #multi_reddit_url = "http://www.reddit.com/user/seagullcanfly/m/plexsubreddits"
     oc.add(DirectoryObject
         (key=Callback(videos,
-                      url=multi_reddit_url+".json",
+                      url=url +".json",
                       title="All Discovery Subreddits",
                       limit=100),
          title="All Discovery Subreddits"))
-    content = HTML.ElementFromURL(multi_reddit_url)
+    content = HTML.ElementFromURL(url)
     multi_subreddits = content.xpath('//ul[@class="subreddits"]//li/a/text()')
     clean_subreddits = []
     for sub in multi_subreddits:
@@ -311,6 +326,21 @@ def get_domains():
                           url=url,
                           title=title),
              title=title))
+    return oc
+
+def domain_search(query):
+    """
+    domain_search searches for any video uploaded to reddit on youtube
+    that matches the query.
+    """
+    oc = ObjectContainer()
+    search_url = "http://www.reddit.com/domain/youtube.com/search.json?q=%s&restrict_sr=on" % query
+    title = "searching for %s...." % query
+    oc.add(DirectoryObject
+        (key=Callback(videos,
+                      url=search_url,
+                      title=title),
+         title=title))
     return oc
 
 
