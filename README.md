@@ -10,10 +10,12 @@
 * Sort the subreddits by hot, new, or top (all time, month, week, day, and hour)
 * Discover subreddits from user-maintained multi-reddit (replaces hard-coded subreddits)
   * (in dev channel only)
+* Search any youtube videos submitted to reddit.
 
 ###Upcoming Features:
 * Support for images
-* Automatic playlist creation (not sure if possible)
+* Automatic playlist creation
+  * (There's no real support for playlists in channels, but there is apparently already the ability to queue up a bunch of videos through the client itself.  Putting this on the backburner indefinitely)
 * View comments for individual videos
 * User authentication
 
