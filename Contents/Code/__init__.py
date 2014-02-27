@@ -1,7 +1,7 @@
 ### Reddit Videos Plex Channel ###
 
 from utilities import good_url
-from categories import reddit_categories, master_list, domain_list
+from categories import domain_list
 
 NAME = "Reddit Videos"
 USER_AGENT = 'seagullcanfly on Reddit RedditVideos Plex plugin' # https://github.com/reddit/reddit/wiki/API
