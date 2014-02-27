@@ -1,10 +1,12 @@
 ### Reddit Videos Plex Channel ###
 
-from utilities import good_url
 domain_list = ['youtube.com', 'vimeo.com', 'ted.com']
-
 NAME = "Reddit Videos"
 USER_AGENT = 'seagullcanfly on Reddit RedditVideos Plex plugin' # https://github.com/reddit/reddit/wiki/API
+
+def good_url(url):
+    ''' This will filter out unwanted words in the url.'''
+    return ('playlist' not in url) and ('crackle.com' not in url) and url
 
 
 def Start():
