@@ -1,89 +1,116 @@
 ### Reddit Videos Plex Channel ###
 
-from utilities import good_url
-from categories import reddit_categories, master_list, domain_list
-
+domain_list = ['youtube.com', 'vimeo.com', 'ted.com']
 NAME = "Reddit Videos"
 USER_AGENT = 'seagullcanfly on Reddit RedditVideos Plex plugin' # https://github.com/reddit/reddit/wiki/API
+
+def good_url(url):
+    ''' This will filter out unwanted words in the url.'''
+    return ('playlist' not in url) and ('crackle.com' not in url) and url
 
 
 def Start():
     """
-Mandatory to include.
+    Mandatory to include.
     """
     ObjectContainer.title1 = NAME
-
 
 @handler('/video/redditvideos', 'Reddit Videos')
 def MainMenu():
     """
     Creates the following menu:
-    Enter a manual subreddit
-    Custom Favorites
-    All subreddits
-    All domains
-    Categories
+        Videos
+        Custom Favorites
+        Enter Manual
+        All domains
+        Subreddit Discovery
     """
     oc = ObjectContainer()
-    # Enter Manual Menu
-    oc.add(InputDirectoryObject(key=Callback(enter_manual),
-                                title='enter a subreddit',
-                                summary='Manually entered subreddits are not saved.' +
-                                        'Enter the name of a subreddit.' +
-                                        '\nDo not include "r/".  e.g., "r/videos"' +
-                                        ' should be entered as "videos"',
-                                prompt="enter the name of a subreddit"))
+
+    # Videos Menu
+    oc.add(DirectoryObject
+        (key=Callback(view_sort,
+                      url='http://www.reddit.com/r/videos/.json',
+                      title='Videos Subreddit'),
+        title='Videos Subreddit'))
 
     # Custom Favorites Menu
-    oc.add(DirectoryObject(key=Callback(custom_favorites),
-                           title='Custom Favorites',
-                           summary='This is where you can store your favorite subreddits', ))
+    oc.add(DirectoryObject
+        (key=Callback(custom_favorites),
+         title='Custom Favorites',
+         summary='This is where you can store your favorite subreddits', ))
 
-    # All Subreddits Menu
-    oc.add(DirectoryObject(key=Callback(LiveMenu),
-                           title="All subreddits",
-                           summary="This is just a list of subreddits included by default.  There" +
-                                   "are plenty of other subreddits to add to your favorites."))
+    # Enter Manual Menu
+    oc.add(InputDirectoryObject
+        (key=Callback(enter_manual),
+         title='Enter a subreddit',
+         summary='Manually entered subreddits are not saved. Enter the name of a subreddit.' +
+                 '\nDo not include "r/".  e.g., "r/videos" should be entered as "videos"',
+         prompt="enter the name of a subreddit"))
+
+    # Search Reddit
+    oc.add(InputDirectoryObject
+        (key=Callback(domain_search),
+         title='Search Reddit',
+         summary='This will search all youtube vidoes uploaded to reddit.',
+         prompt="enter your search term"))
+
     # All Domains Menu
-    oc.add(DirectoryObject(key=Callback(get_domains),
-                           title='All Domains',
-                           summary='This is a neat trick with reddit.  You can view the top videos' +
-                                   'regardless of what subreddit they are in just by the domain they come' +
-                                   'from.'))
-    # Start adding menus for each category
-    for element in sorted(reddit_categories.keys()):
-        title = element
-        c_list = reddit_categories[element]['c_list']
-        summary = reddit_categories[element]['summary']
-        oc.add(DirectoryObject(key=Callback(LiveMenu, category=c_list),
-                               title=title,
-                               summary=summary))
+    oc.add(DirectoryObject
+        (key=Callback(get_domains),
+         title='All Domains',
+         summary='This is a neat trick with reddit.  You can view the top videos regardless of' +
+                 'what subreddit they are in just by the domain they come from.'))
+
+    # Subreddit Discovery Menu
+    oc.add(DirectoryObject
+        (key=Callback(subreddit_discovery,
+        url= "http://www.reddit.com/user/seagullcanfly/m/plexsubreddits"),
+         title="Subreddit Discovery",
+         summary="This is an automatic list maintained by u/efidol and u/seagullcanfly."))
+
+    # Gaming Subreddits
+    oc.add(DirectoryObject
+        (key=Callback(subreddit_discovery,
+        url="http://www.reddit.com/user/seagullcanfly/m/gamingvideos"),
+         title="Gaming Subreddits",
+         summary="This is an automatic list maintained by u/seagullcanfly."))
     return oc
 
 
-def LiveMenu(category=None):
+def subreddit_discovery(url):
     """
-    The LiveMenu shows the name of the subreddit before the next directory
-    which only shows the sorting options by hot, top, and new.
+    subreddit_discovery automatically pulls a maintained list of popular subreddits
+    from a published multireddit.
     """
     oc = ObjectContainer()
-    if not category:
-        subreddits = master_list
-    else:
-        subreddits = category
+    #multi_reddit_url = "http://www.reddit.com/user/seagullcanfly/m/plexsubreddits"
+    oc.add(DirectoryObject
+        (key=Callback(videos,
+                      url=url +".json",
+                      title="All Discovery Subreddits",
+                      limit=100),
+         title="All Discovery Subreddits"))
+    content = HTML.ElementFromURL(url)
+    multi_subreddits = content.xpath('//ul[@class="subreddits"]//li/a/text()')
+    clean_subreddits = []
+    for sub in multi_subreddits:
+        sub = sub.split('r/')[-1]
+        clean_subreddits.append(sub.title())
+    subreddits = clean_subreddits
     for subreddit in sorted(subreddits):
         url = 'http://www.reddit.com/r/%s/.json' % subreddit
         title = 'r/%s' % subreddit
-
-        oc.add(DirectoryObject(key=Callback(ViewSort,
-                                            url=url,
-                                            title=title,
-                                            limit=100),
-                               title=title))
+        oc.add(DirectoryObject
+            (key=Callback(view_sort,
+                          url=url,
+                          title=title,
+                          limit=100),
+             title=title))
     return oc
 
 
-def ViewSort(url, title, limit=100):
+def view_sort(url, title, limit=100):
     """
     Currently all videos can be sorted by hot, new, and top.  Top includes all time,
     month, week, day, and hour.
@@ -94,30 +121,34 @@ def ViewSort(url, title, limit=100):
     new_url = url_list[0] + 'new/.json'
 
     # Hot
-    oc.add(DirectoryObject(key=Callback(videos,
-                                        url=url,
-                                        title=title + ":  Hot",
-                                        limit=limit),
-                           title="Hot"))
+    oc.add(DirectoryObject
+        (key=Callback(videos,
+                      url=url,
+                      title=title + ":  Hot",
+                      limit=limit),
+         title="Hot"))
     # New
-    oc.add(DirectoryObject(key=Callback(videos,
-                                        url=new_url,
-                                        title=title + ":  New",
-                                        limit=100),
-                           title="New"))
+    oc.add(DirectoryObject
+        (key=Callback(videos,
+                      url=new_url,
+                      title=title + ":  New",
+                      limit=100),
+         title="New"))
     # Top - with sortings
-    sortings = {'all': 'Top - All Time', 'month': 'Top - Month',
-                'week': 'Top - Week', 'day': 'Top - Day',
+    sortings = {'all': 'Top - All Time',
+                'month': 'Top - Month',
+                'week': 'Top - Week',
+                'day': 'Top - Day',
                 'hour': 'Top - Hour'}
     sort_order = ['all', 'month', 'week', 'day', 'hour']
-
     for view in sort_order:
-        oc.add(DirectoryObject(key=Callback(videos,
-                                            url=top_url,
-                                            title=sortings[view],
-                                            limit=100,
-                                            sort=view),
-                               title=sortings[view]))
+        oc.add(DirectoryObject
+            (key=Callback(videos,
+                          url=top_url,
+                          title=sortings[view],
+                          limit=100,
+                          sort=view),
+             title=sortings[view]))
     return oc
 
 
@@ -184,33 +215,46 @@ def videos(url, title, count=0, limit=25, after='', sort=None):
     count += limit
 
     if after:
-        oc.add(NextPageObject(key=Callback(videos,
-                                           url=url,
-                                           title=title,
-                                           count=count,
-                                           limit=limit,
-                                           after=after),
-                              title='Next ...'))
+        oc.add(NextPageObject
+            (key=Callback(videos,
+                          url=url,
+                          title=title,
+                          count=count,
+                          limit=limit,
+                          after=after),
+             title='Next ...'))
     return oc
 
 
 def custom_favorites():
     """
-    This is just a menu for entering in favorites.
+    Has the following menus:
+        1. Add a Custom Favorite
+        2. Delete a Custom Favorite
+        3. Custom Favorites Populated
     """
     oc = ObjectContainer()
-    oc.add(InputDirectoryObject(key=Callback(enter_favorite),
-                                title='Add a Custom Favorite',
-                                summary='Enter the name of a subreddit.' +
-                                        '\nDo not include "r/".  e.g., "r/videos"' +
-                                        ' should be entered as "videos"',
-                                prompt="enter the name of a subreddit"))
-    oc.add(InputDirectoryObject(key=Callback(delete_favorite),
-                                title='Delete a Custom Favorite',
-                                summary='Enter the name of a subreddit.' +
-                                        '\nDo not include "r/".  e.g., "r/videos"' +
-                                        ' should be entered as "videos"',
-                                prompt="enter the name of a subreddit"))
+
+    # Add a Custom Favorite
+
+    oc.add(InputDirectoryObject
+        (key=Callback(enter_favorite),
+         title='Add a Custom Favorite',
+         summary='Enter the name of a subreddit.\nDo not include "r/".  e.g., "r/videos"' +
+         ' should be entered as "videos."',
+         prompt="enter the name of a subreddit"))
+
+    # Delete a Custom Favorite
+
+    oc.add(InputDirectoryObject
+        (key=Callback(delete_favorite),
+         title='Delete a Custom Favorite',
+         summary='Enter the name of a subreddit.\nDo not include "r/".  e.g., "r/videos"' +
+         ' should be entered as "videos."',
+         prompt="enter the name of a subreddit"))
+
+    # Custom Favorites
+
     try:
         custom_faves = Dict['favorites']
     except:
@@ -222,10 +266,11 @@ def custom_favorites():
     for subreddit in custom_faves:
         url = 'http://www.reddit.com/r/%s/.json' % subreddit
         title = 'r/%s' % subreddit
-        oc.add(DirectoryObject(key=Callback(ViewSort,
-                                            url=url,
-                                            title=title),
-                               title=title))
+        oc.add(DirectoryObject
+            (key=Callback(view_sort,
+                          url=url,
+                          title=title),
+             title=title))
     return oc
 
 
@@ -264,10 +309,26 @@ def get_domains():
     for domain in sorted(domain_list):
         url = 'http://www.reddit.com/domain/%s/.json' % domain
         title = 'domain/' + domain
-        oc.add(DirectoryObject(key=Callback(videos,
-                                            url=url,
-                                            title=title),
-                               title=title))
+        oc.add(DirectoryObject
+            (key=Callback(videos,
+                          url=url,
+                          title=title),
+             title=title))
+    return oc
+
+def domain_search(query):
+    """
+    domain_search searches for any video uploaded to reddit on youtube
+    that matches the query.
+    """
+    oc = ObjectContainer()
+    search_url = "http://www.reddit.com/domain/youtube.com/search.json?q=%s&restrict_sr=on" % query
+    title = "searching for %s...." % query
+    oc.add(DirectoryObject
+        (key=Callback(videos,
+                      url=search_url,
+                      title=title),
+         title=title))
     return oc
 
 
@@ -279,8 +340,9 @@ def enter_manual(query):
     oc = ObjectContainer()
     url = 'http://www.reddit.com/r/%s/.json' % query
     title = 'r/' + query
-    oc.add(DirectoryObject(key=Callback(ViewSort,
-                                        url=url,
-                                        title=title),
-                           title=title))
+    oc.add(DirectoryObject
+        (key=Callback(view_sort,
+                      url=url,
+                      title=title),
+         title=title))
     return oc
