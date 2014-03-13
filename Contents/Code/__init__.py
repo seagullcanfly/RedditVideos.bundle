@@ -1,6 +1,6 @@
 ### Reddit Videos Plex Channel ###
 
-domain_list = ['youtube.com', 'vimeo.com', 'ted.com']
+domain_list = ['youtube.com', 'vimeo.com']
 NAME = "Reddit Videos"
 USER_AGENT = 'seagullcanfly on Reddit RedditVideos Plex plugin' # https://github.com/reddit/reddit/wiki/API
 
@@ -21,9 +21,11 @@ def MainMenu():
     Creates the following menu:
         Videos
         Custom Favorites
+        Enter Multireddit
         Enter Manual
         All domains
         Subreddit Discovery
+        Gaming Discovery
     """
     oc = ObjectContainer()
 
@@ -39,6 +41,12 @@ def MainMenu():
         (key=Callback(custom_favorites),
          title='Custom Favorites',
          summary='This is where you can store your favorite subreddits', ))
+
+    # Enter Multireddit
+    oc.add(DirectoryObject
+        (key=Callback(enter_multireddit),
+         title='Enter a multireddit',
+         summary='By creating a multireddit first on reddit, you can maintain your favorite subreddits online.', ))
 
     # Enter Manual Menu
     oc.add(InputDirectoryObject
@@ -299,6 +307,93 @@ def delete_favorite(query):
     Dict['favorites'] = current_list
     Dict.Save()
 
+
+def enter_multireddit():
+    """
+    Has the following menus:
+        1. Add a Multireddit
+        2. Delete a Multireddit
+        3. Custom Favorites Populated
+    """
+    oc = ObjectContainer()
+
+    try:
+        multireddits = Dict['multireddits']
+    except:
+        Dict['multireddits'] = []
+        Dict['instructions'] = False
+    if Dict['instructions']:
+
+    # Multireddits
+
+        for user, multi in multireddits:
+            user = user.strip()
+            multi = multi.strip()
+            url = 'http://www.reddit.com/user/%s/m/%s' % (user, multi)
+            title = "%s's %s" % (user, multi)
+            oc.add(DirectoryObject
+            (key=Callback(subreddit_discovery,
+             url=url),
+             title=title,
+             summary="This is a stored multireddit."))
+
+    # Add a Multireddit
+
+        oc.add(InputDirectoryObject
+            (key=Callback(enter_multi),
+             title='Add a Multireddit',
+             summary='Enter the user who created the subreddit, a comma (",") followed by the name'+
+                     'of the multireddit.  For example, you could enter this without the quotation marks' +
+                     'to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
+             prompt="enter the user who created the multireddit, a comma, then the multireddit's name" +
+                    "e.g., seagullcanfly, gamingvideos"))
+
+        # Delete a Multireddit
+
+        oc.add(InputDirectoryObject
+            (key=Callback(delete_multi),
+             title='Delete a Multireddit',
+             summary='Enter the user who created the subreddit, a comma (",") followed by the name'+
+                     'of the multireddit.  For example, you could enter this without the quotation marks' +
+                     'to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
+             prompt="enter the user who created the multireddit, a comma, then the multireddit's name" +
+                    "e.g., seagullcanfly, gamingvideos"))
+        return oc
+
+    else:
+        Dict['instructions'] = True
+        Dict.Save()
+        return ObjectContainer(header="Instructions", message="Find or create a public multireddit on reddit. "+
+                              "Remember the user name and multireddit name.")
+
+def enter_multi(query):
+    """
+    This adds a user-generated multireddit in persistent storage.
+    """
+    try:
+        multireddits = Dict['multireddits']
+    except:
+        multireddits = []
+    query = query.split(',')
+    query = (query[0], query[1])
+    multireddits.append(query)
+    Dict['multireddits'] = multireddits
+    Dict.Save()
+
+
+def delete_multi(query):
+    """
+    This deletes a user-generated multireddit from persistent storage.
+    """
+    multireddits = Dict['multireddits']
+    query = query.split(',')
+    query = (query[0], query[1])
+    try:
+        multireddits.remove(query)
+    except ValueError:
+        Log('Problem with deleting multireddit from storage')
+    Dict['multireddits'] = multireddits
+    Dict.Save()
 
 def get_domains():
     """
