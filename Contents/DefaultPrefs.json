@@ -42,9 +42,9 @@
         "default": "true"
   },
   {
-        "id": "show_search_reddit",
+        "id": "show_gaming_subreddits",
         "type": "bool",
-        "label": "Show the Search Reddit menu?",
+        "label": "Show the Gaming Subreddits menu?",
         "default": "true"
   }
 ]
