@@ -1,0 +1,50 @@
+[
+  {
+        "id": "show_videos",
+        "type": "bool",
+        "label": "Show the Videos menu?",
+        "default": "true"
+  },
+  {
+        "id": "show_domains",
+        "type": "bool",
+        "label": "Show the Domains menu?",
+        "default": "true"
+  },
+  {
+        "id": "show_custom_favorites",
+        "type": "bool",
+        "label": "Show the Custom Favorites menu?",
+        "default": "true"
+  },
+  {
+        "id": "show_enter_multireddit",
+        "type": "bool",
+        "label": "Show the Enter multireddit menu?",
+        "default": "true"
+  },
+  {
+        "id": "show_enter_manual",
+        "type": "bool",
+        "label": "Show the Enter Manual menu?",
+        "default": "true"
+  },
+  {
+        "id": "show_search_reddit",
+        "type": "bool",
+        "label": "Show the Search Reddit menu?",
+        "default": "true"
+  },
+  {
+        "id": "show_subreddit_discovery",
+        "type": "bool",
+        "label": "Show the Subreddit Discovery menu?",
+        "default": "true"
+  },
+  {
+        "id": "show_search_reddit",
+        "type": "bool",
+        "label": "Show the Search Reddit menu?",
+        "default": "true"
+  }
+]

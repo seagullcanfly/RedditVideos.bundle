@@ -1,19 +1,22 @@
 ### Reddit Videos Plex Channel ###
 
-domain_list = ['youtube.com', 'vimeo.com']
 NAME = "Reddit Videos"
 USER_AGENT = 'seagullcanfly on Reddit RedditVideos Plex plugin' # https://github.com/reddit/reddit/wiki/API
 
 def good_url(url):
-    ''' This will filter out unwanted words in the url.'''
+    """ This will filter out unwanted words in the url."""
     return ('playlist' not in url) and ('crackle.com' not in url) and url
 
+
+####################################################################################################################
 
 def Start():
     """
     Mandatory to include.
     """
     ObjectContainer.title1 = NAME
+
+#################################################MENU###############################################################
 
 @handler('/video/redditvideos', 'Reddit Videos')
 def MainMenu():
@@ -30,26 +33,30 @@ def MainMenu():
     oc = ObjectContainer()
 
     # Videos Menu
-    oc.add(DirectoryObject
+    if Prefs['show_videos']:
+        oc.add(DirectoryObject
         (key=Callback(view_sort,
                       url='http://www.reddit.com/r/videos/.json',
                       title='Videos Subreddit'),
         title='Videos Subreddit'))
 
     # Custom Favorites Menu
-    oc.add(DirectoryObject
+    if Prefs['show_custom_favorites']:
+        oc.add(DirectoryObject
         (key=Callback(custom_favorites),
          title='Custom Favorites',
          summary='This is where you can store your favorite subreddits', ))
 
     # Enter Multireddit
-    oc.add(DirectoryObject
+    if Prefs['show_enter_multireddit']:
+        oc.add(DirectoryObject
         (key=Callback(enter_multireddit),
          title='Enter a multireddit',
          summary='By creating a multireddit first on reddit, you can maintain your favorite subreddits online.', ))
 
     # Enter Manual Menu
-    oc.add(InputDirectoryObject
+    if Prefs['show_enter_manual']:
+        oc.add(InputDirectoryObject
         (key=Callback(enter_manual),
          title='Enter a subreddit',
          summary='Manually entered subreddits are not saved. Enter the name of a subreddit.' +
@@ -57,34 +64,44 @@ def MainMenu():
          prompt="enter the name of a subreddit"))
 
     # Search Reddit
-    oc.add(InputDirectoryObject
+    if Prefs['show_search_reddit']:
+        oc.add(InputDirectoryObject
         (key=Callback(domain_search),
          title='Search Reddit',
          summary='This will search all youtube vidoes uploaded to reddit.',
          prompt="enter your search term"))
 
     # All Domains Menu
-    oc.add(DirectoryObject
+    if Prefs['show_domains']:
+        oc.add(DirectoryObject
         (key=Callback(get_domains),
          title='All Domains',
          summary='This is a neat trick with reddit.  You can view the top videos regardless of' +
                  'what subreddit they are in just by the domain they come from.'))
 
     # Subreddit Discovery Menu
-    oc.add(DirectoryObject
+    if Prefs['show_subreddit_discovery']:
+        oc.add(DirectoryObject
         (key=Callback(subreddit_discovery,
         url= "http://www.reddit.com/user/seagullcanfly/m/plexsubreddits"),
          title="Subreddit Discovery",
-         summary="This is an automatic list maintained by u/efidol and u/seagullcanfly."))
+         summary="This is an automatic list maintained by u/seagullcanfly."))
 
     # Gaming Subreddits
-    oc.add(DirectoryObject
+    if Prefs['show_gaming_subreddits']:
+        oc.add(DirectoryObject
         (key=Callback(subreddit_discovery,
         url="http://www.reddit.com/user/seagullcanfly/m/gamingvideos"),
          title="Gaming Subreddits",
          summary="This is an automatic list maintained by u/seagullcanfly."))
+
+    # Preferences
+    oc.add(PrefsObject
+            (title='Change channel settings'))
+
     return oc
 
+####################################################################################################################
 
 def subreddit_discovery(url):
     """
@@ -117,6 +134,7 @@ def subreddit_discovery(url):
              title=title))
     return oc
 
+####################################################################################################################
 
 def view_sort(url, title, limit=100):
     """
@@ -159,6 +177,7 @@ def view_sort(url, title, limit=100):
              title=sortings[view]))
     return oc
 
+####################################################################################################################
 
 def videos(url, title, count=0, limit=25, after='', sort=None):
     """
@@ -190,11 +209,21 @@ def videos(url, title, count=0, limit=25, after='', sort=None):
                         childtype = None
 
                     if childtype == 'video':
-                        video_url = child['data'].get('url')
+
+                        # Get video title
 
                         video_title = child['data'].get('title')
                         if video_title:
                             video_title = video_title.replace('&amp;', '&').replace('\n', '')
+
+                        #  Is it an NSFW video?
+                        #  I would like to implement this when I can find a way to ensure
+                        #  any preference setting can't just be reversed.
+                        #  video_over_18 =  child['data'].get('over_18')
+
+
+                        video_url = child['data'].get('url')
+
 
                         summary = child['data']['media']['oembed'].get('description')
                         if summary:
@@ -233,6 +262,7 @@ def videos(url, title, count=0, limit=25, after='', sort=None):
              title='Next ...'))
     return oc
 
+####################################################################################################################
 
 def custom_favorites():
     """
@@ -281,6 +311,7 @@ def custom_favorites():
              title=title))
     return oc
 
+####################################################################################################################
 
 def enter_favorite(query):
     """
@@ -294,6 +325,7 @@ def enter_favorite(query):
     Dict['favorites'] = custom_faves
     Dict.Save()
 
+####################################################################################################################
 
 def delete_favorite(query):
     """
@@ -307,6 +339,7 @@ def delete_favorite(query):
     Dict['favorites'] = current_list
     Dict.Save()
 
+####################################################################################################################
 
 def enter_multireddit():
     """
@@ -316,6 +349,8 @@ def enter_multireddit():
         3. Custom Favorites Populated
     """
     oc = ObjectContainer()
+
+    # if no multireddits exist, the directory should show instructions once.
 
     try:
         multireddits = Dict['multireddits']
@@ -366,6 +401,8 @@ def enter_multireddit():
         return ObjectContainer(header="Instructions", message="Find or create a public multireddit on reddit. "+
                               "Remember the user name and multireddit name.")
 
+####################################################################################################################
+
 def enter_multi(query):
     """
     This adds a user-generated multireddit in persistent storage.
@@ -380,6 +417,7 @@ def enter_multi(query):
     Dict['multireddits'] = multireddits
     Dict.Save()
 
+####################################################################################################################
 
 def delete_multi(query):
     """
@@ -395,12 +433,15 @@ def delete_multi(query):
     Dict['multireddits'] = multireddits
     Dict.Save()
 
+####################################################################################################################
+
 def get_domains():
     """
     get_domains lists all the videos on reddit for the
-    domains in categories.domain_list.
+    domains in domain_list.
     """
     oc = ObjectContainer()
+    domain_list = ['youtube.com', 'vimeo.com']
     for domain in sorted(domain_list):
         url = 'http://www.reddit.com/domain/%s/.json' % domain
         title = 'domain/' + domain
@@ -410,6 +451,8 @@ def get_domains():
                           title=title),
              title=title))
     return oc
+
+####################################################################################################################
 
 def domain_search(query):
     """
@@ -426,6 +469,7 @@ def domain_search(query):
          title=title))
     return oc
 
+####################################################################################################################
 
 def enter_manual(query):
     """
