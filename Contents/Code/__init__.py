@@ -151,14 +151,13 @@ def enter_multireddit():
     # if no multireddits exist, the directory should show instructions once.
     try:
         multireddits = Dict['multireddits']
-        multireddits_key_exists = True
     except KeyError:
         Dict['multireddits'] = []
         return ObjectContainer(header="Instructions",
                                message="Find or create a public multireddit on reddit. " +
                                "Remember the user name and multireddit name.")
 
-    if multireddits_key_exists:
+    if multireddits:
         # List stored Multireddits
         for user, multi in multireddits:
             user = user.strip()
@@ -172,25 +171,25 @@ def enter_multireddit():
                    summary="This is a stored multireddit."))
 
         # Add a Multireddit
-        oc.add(InputDirectoryObject
-              (key=Callback(enter_multi),
-               title='Add a Multireddit',
-               summary='Enter the user who created the subreddit, a comma (",") followed by the name' +
-               'of the multireddit.  For example, you could enter this without the quotation marks' +
-               'to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
-               prompt="enter the user who created the multireddit, a comma, then the multireddit's name" +
-               "e.g., seagullcanfly, gamingvideos"))
+    oc.add(InputDirectoryObject
+          (key=Callback(enter_multi),
+           title='Add a Multireddit',
+           summary='Enter the user who created the subreddit, a comma (",") followed by the name' +
+           'of the multireddit.  For example, you could enter this without the quotation marks' +
+           'to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
+           prompt="enter the user who created the multireddit, a comma, then the multireddit's name" +
+           "e.g., seagullcanfly, gamingvideos"))
 
         # Delete a Multireddit
-        oc.add(InputDirectoryObject
-              (key=Callback(delete_multi),
-               title='Delete a Multireddit',
-               summary='Enter the user who created the subreddit, a comma (",") followed by the name' +
-               'of the multireddit.  For example, you could enter this without the quotation marks' +
-               'to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
-               prompt="enter the user who created the multireddit, a comma, then the multireddit's name" +
-               "e.g., seagullcanfly, gamingvideos"))
-        return oc
+    oc.add(InputDirectoryObject
+           (key=Callback(delete_multi),
+            title='Delete a Multireddit',
+            summary='Enter the user who created the subreddit, a comma (",") followed by the name' +
+            'of the multireddit.  For example, you could enter this without the quotation marks' +
+            'to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
+            prompt="enter the user who created the multireddit, a comma, then the multireddit's name" +
+            "e.g., seagullcanfly, gamingvideos"))
+    return oc
 
 
 def enter_multi(query):
@@ -201,6 +200,8 @@ def enter_multi(query):
         multireddits = []
     query = query.split(',')
     query = (query[0], query[1])
+    if not multireddits:
+        multireddits = []
     multireddits.append(query)
     Dict['multireddits'] = multireddits
     Dict.Save()
@@ -213,7 +214,7 @@ def delete_multi(query):
     query = (query[0], query[1])
     try:
         multireddits.remove(query)
-    except ValueError:
+    except KeyError:
         Log('Problem with deleting multireddit from storage')
     Dict['multireddits'] = multireddits
     Dict.Save()
