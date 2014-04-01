@@ -246,11 +246,12 @@ def view_sort(url, title, limit=100):
            title="New"))
     # Top - with sortings
     sortings = {'all': 'Top - All Time',
+                'year': 'Top - Year',
                 'month': 'Top - Month',
                 'week': 'Top - Week',
                 'day': 'Top - Day',
                 'hour': 'Top - Hour'}
-    sort_order = ['all', 'month', 'week', 'day', 'hour']
+    sort_order = ['all', 'year', 'month', 'week', 'day', 'hour']
     for view in sort_order:
         oc.add(DirectoryObject
               (key=Callback(videos,
