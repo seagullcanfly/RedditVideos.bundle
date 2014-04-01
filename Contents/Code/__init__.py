@@ -45,8 +45,8 @@ def MainMenu():
     if Prefs['show_videos']:
         oc.add(DirectoryObject
               (key=Callback(view_sort,
-               url='http://www.reddit.com/r/videos/.json',
-               title='Videos Subreddit'),
+                            url='http://www.reddit.com/r/videos/.json',
+                            title='Videos Subreddit'),
                title='Videos Subreddit'))
 
     # Custom Favorites Menu
@@ -92,7 +92,7 @@ def MainMenu():
     if Prefs['show_subreddit_discovery']:
         oc.add(DirectoryObject
               (key=Callback(subreddit_discovery,
-               url="http://www.reddit.com/user/seagullcanfly/m/plexsubreddits"),
+                            url="http://www.reddit.com/user/seagullcanfly/m/plexsubreddits"),
                title="Subreddit Discovery",
                summary="This is an automatic list maintained by u/seagullcanfly."))
 
@@ -100,7 +100,7 @@ def MainMenu():
     if Prefs['show_gaming_subreddits']:
         oc.add(DirectoryObject
               (key=Callback(subreddit_discovery,
-               url="http://www.reddit.com/user/seagullcanfly/m/gamingvideos"),
+                            url="http://www.reddit.com/user/seagullcanfly/m/gamingvideos"),
                title="Gaming Subreddits",
                summary="This is an automatic list maintained by u/seagullcanfly."))
 
@@ -270,7 +270,6 @@ def videos(url, title, count=0, limit=25, after='', sort=None):
     permits a text search if there is no link available.  It currently only works for
     youtube videos.  The .find methods need to be replaced with regular expressions."""
     oc = ObjectContainer(title2=title)
-    result = {}
     url += '?count=%d&limit=%d&after=%s' % (count, limit, after)
     if sort:
         url += '&sort=top&t=%s' % sort
@@ -278,70 +277,70 @@ def videos(url, title, count=0, limit=25, after='', sort=None):
 
     @parallelize
     def get_videos():
-        # Find Video Links
-        children = search_page['data']['children']
 
-        if children:
-            for num in range(len(children)):
-                child = children[num]
+        video_posts = search_page['data']['children']
+        if video_posts:
+            for video_child in video_posts:
 
                 @task
-                def get_video(num=num, result=result, child=child):
-                    try:
-                        childtype = child['data']['media']['oembed']['type']
-                    except AttributeError:
-                        # Here we go through self text posts.
-                        try:
-                            text_post = child['data']['selftext_html']
-                            if text_post:
-                                urls = []
-                                youtube_prefix = 'http://www.'
-                                youtube_key = 'youtube.com/watch?v='
-                                youtube_length = len(youtube_key) + 11
-                                start_index = text_post.find(youtube_key)
-                                while start_index > 0:
-                                    text_post = text_post[start_index::]
-                                    end_index = youtube_length
-                                    vid_url = youtube_prefix + text_post[:end_index]
-                                    if vid_url not in urls:
-                                        urls.append(vid_url)
-                                    text_post = text_post[end_index::]
-                                    start_index = text_post.find(youtube_key)
-                                if urls:
-                                    childtype = 'selftext'
-                                else:
-                                    childtype = None
-                        except KeyError:
-                            childtype = None
-
-                    if childtype == 'video' or childtype == 'selftext':
+                def get_video(video_post=video_child):
+                    video_urls = None
+                    accepted_domains = ['youtube.com', 'vimeo.com']
+                    post_domain = video_post['data'].get('domain')
+                    self_text = video_post['data'].get('is_self')
+                    if post_domain in accepted_domains:
+                        video_urls = [video_post['data'].get('url')]
+                        if video_post:
+                            Log(video_post)
+                            video_summary = video_post['data']['media']['oembed'].get('description')
+                            Log(video_summary)
+                    elif self_text == 'true':
+                        text_post = video_post['data']['selftext_html']
+                        video_summary = text_post
+                        video_urls = []
+                        youtube_prefix = 'http://www.'
+                        youtube_key = 'youtube.com/watch?v='
+                        youtube_length = len(youtube_key) + 11
+                        start_index = text_post.find(youtube_key)
+                        while start_index > 0:
+                            text_post = text_post[start_index::]
+                            end_index = youtube_length
+                            vid_url = youtube_prefix + text_post[:end_index]
+                            if vid_url not in video_urls:
+                                video_urls.append(vid_url)
+                            text_post = text_post[end_index::]
+                            start_index = text_post.find(youtube_key)
+                    if video_urls:
                         # Get video title
-                        video_title = child['data'].get('title')
-                        score = str(child['data'].get('score'))
+                        video_title = video_post['data'].get('title')
+                        video_score = str(video_post['data'].get('score'))
+                        video_id = str(video_post['data'].get('id'))
+                        video_subreddit = str(video_post['data'].get('subreddit'))
+                        video_thumbnail = str(video_post['data'].get('thumbnail'))
+                        #  video_over_18 =  child['data'].get('over_18') # working on this
                         if video_title:
                             video_title = String.StripTags(video_title)
                         else:
                             video_title = "We don't see a title."
                         if Prefs['show_score']:
-                            video_title = score + " | " + video_title
+                            video_title = video_score + " | " + video_title
 
-                        #  Is it an NSFW video?
-                        #  I would like to implement this when I can find a way to ensure
-                        #  any preference setting can't just be reversed.
-                        #  video_over_18 =  child['data'].get('over_18')
-
-                        if childtype == 'video':
-                            video_url = [child['data'].get('url')]
-                            summary = child['data']['media']['oembed'].get('description')
-                        else:
-                            video_url = urls
-                            summary = video_title
-                        for video in video_url:
-                            if good_url(video):
-                                video = URLService.MetadataObjectForURL(video)
-                                video.title = String.StripTags(video_title)
-                                video.summary = String.StripTags(summary)
-                                oc.add(video)
+                        for video_url in video_urls:
+                            if good_url(video_url):
+                                if Prefs['show_comment_menu']:
+                                    oc.add(DirectoryObject(key=Callback(commented_videos,
+                                                                        video_url=video_url,
+                                                                        video_id=video_id,
+                                                                        video_subreddit=video_subreddit,
+                                                                        video_title=video_title,
+                                                                        video_summary=video_summary),
+                                                           title=video_title,
+                                                           thumb=video_thumbnail))
+                                else:
+                                    video_object = URLService.MetadataObjectForURL(video_url)
+                                    video_object.title = String.StripTags(video_title)
+                                    video_object.summary = String.StripTags(video_summary)
+                                    oc.add(video_object)
 
     # Find/Add Next Menu
     after = search_page['data'].get('after')
@@ -356,6 +355,26 @@ def videos(url, title, count=0, limit=25, after='', sort=None):
                             limit=limit,
                             after=after),
                title='Next ...'))
+    return oc
+
+
+def commented_videos(video_url, video_id, video_subreddit, video_title, video_summary):
+    """If turned on in the channel's preferences, another menu level will be created that
+    shows the top-rated comments for a video."""
+    oc = ObjectContainer()
+    video_object = URLService.MetadataObjectForURL(video_url)
+    video_object.title = String.StripTags(video_title)
+    video_object.summary = String.StripTags(video_summary)
+    oc.add(video_object)
+    comment_url = 'http://www.reddit.com/r/' + video_subreddit + '/' + video_id + '.json'
+    comment_page = JSON.ObjectFromURL(comment_url, sleep=2.0, cacheTime=600, headers={'User-Agent': USER_AGENT})
+    comments = comment_page[1]['data']['children']
+    for comment in comments:
+        comment_text = comment['data'].get('body')
+        if not comment_text:
+            comment_text = "Not yet commented on."
+        oc.add(DirectoryObject(title=comment_text,
+                               summary=comment_text))
     return oc
 
 ###############################################  FAVORITES  ########################################################

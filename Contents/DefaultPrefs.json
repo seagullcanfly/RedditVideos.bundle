@@ -53,4 +53,11 @@
         "label": "Let the title of the video be prefaced with upvote count?",
         "default": "true"
   }
+  ,
+  {
+        "id": "show_comment_menu",
+        "type": "bool",
+        "label": "Enable the extra comment menu?",
+        "default": "true"
+  }
 ]
