@@ -46,5 +46,11 @@
         "type": "bool",
         "label": "Show the Gaming Subreddits menu?",
         "default": "true"
+  },
+  {
+        "id": "show_score",
+        "type": "bool",
+        "label": "Let the title of the video be prefaced with upvote count?",
+        "default": "true"
   }
 ]

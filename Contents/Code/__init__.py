@@ -317,10 +317,13 @@ def videos(url, title, count=0, limit=25, after='', sort=None):
                     if childtype == 'video' or childtype == 'selftext':
                         # Get video title
                         video_title = child['data'].get('title')
+                        score = str(child['data'].get('score'))
                         if video_title:
                             video_title = String.StripTags(video_title)
                         else:
                             video_title = "We don't see a title."
+                        if Prefs['show_score']:
+                            video_title = score + " | " + video_title
 
                         #  Is it an NSFW video?
                         #  I would like to implement this when I can find a way to ensure
