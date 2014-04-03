@@ -86,7 +86,7 @@ def MainMenu():
               (key=Callback(get_domains),
                title='All Domains',
                summary='This is a neat trick with reddit.  You can view the top videos regardless of' +
-               'what subreddit they are in just by the domain they come from.'))
+               ' what subreddit they are in just by the domain they come from.'))
 
     # Subreddit Discovery Menu
     if Prefs['show_subreddit_discovery']:
@@ -175,8 +175,8 @@ def enter_multireddit():
           (key=Callback(enter_multi),
            title='Add a Multireddit',
            summary='Enter the user who created the subreddit, a comma (",") followed by the name' +
-           'of the multireddit.  For example, you could enter this without the quotation marks' +
-           'to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
+           ' of the multireddit.  For example, you could enter this without the quotation marks' +
+           ' to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
            prompt="enter the user who created the multireddit, a comma, then the multireddit's name" +
            "e.g., seagullcanfly, gamingvideos"))
 
@@ -185,8 +185,8 @@ def enter_multireddit():
            (key=Callback(delete_multi),
             title='Delete a Multireddit',
             summary='Enter the user who created the subreddit, a comma (",") followed by the name' +
-            'of the multireddit.  For example, you could enter this without the quotation marks' +
-            'to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
+            ' of the multireddit.  For example, you could enter this without the quotation marks' +
+            ' to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
             prompt="enter the user who created the multireddit, a comma, then the multireddit's name" +
             "e.g., seagullcanfly, gamingvideos"))
     return oc
@@ -373,9 +373,14 @@ def commented_videos(video_url, video_id, video_subreddit, video_title, video_su
         comment_text = comment['data'].get('body')
         if not comment_text:
             comment_text = "Not yet commented on."
-        oc.add(DirectoryObject(title=comment_text,
+        oc.add(PopupDirectoryObject(key=Callback(show_comment,
+                                            comment=comment_text),
+                               title=comment_text,
                                summary=comment_text))
     return oc
+
+def show_comment(comment):
+    return ObjectContainer(header='Video Comment', message=comment)
 
 ###############################################  FAVORITES  ########################################################
 
