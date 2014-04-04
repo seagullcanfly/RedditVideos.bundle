@@ -9,8 +9,21 @@
 #
 ####################################################################################################################
 
+#################################################CONSTANTS##########################################################
+
 NAME = "Reddit Videos"
 USER_AGENT = 'seagullcanfly on Reddit RedditVideos Plex plugin'  # https://github.com/reddit/reddit/wiki/API
+MULTI_SUMMARY = '''Enter the user who created the subreddit, a comma (",") followed by the name
+of the multireddit.  For example, you could enter this without the quotation marks to enter my
+gamingvideos multireddit, "seagullcanfly, gamingvideos"'''
+MULTI_PROMPT = '''Enter the user who created the multireddit, a comma, then the multireddit's name
+e.g., seagullcanfly, gamingvideos'''
+FAVORITES_SUMMARY = ''''Enter the name of a subreddit.
+Do not include "r/".  e.g., "r/videos" should be entered as "videos."'''
+FAVORITES_PROMPT = '''Enter the name of a subreddit.'''
+SUBREDDIT_DISCOVERY_URL = "http://www.reddit.com/user/seagullcanfly/m/plexsubreddits"
+GAMING_URL = "http://www.reddit.com/user/seagullcanfly/m/gamingvideos"
+SUBREDDIT_BASE = 'http://www.reddit.com/r/%s/.json'
 
 
 def good_url(url):
@@ -21,9 +34,6 @@ def good_url(url):
 
 
 def Start():
-    """
-    Mandatory to include.
-    """
     ObjectContainer.title1 = NAME
 
 ###############################################  MENU  #############################################################
@@ -31,89 +41,58 @@ def Start():
 
 @handler('/video/redditvideos', 'Reddit Videos')
 def MainMenu():
-    """ Creates the following menus: Videos, Custom Favorites, Enter Multireddit, Enter Manual
-        All domains, Subreddit Discovery, Gaming Discovery   """
+    """ Creates the following menus: Videos, Custom Favorites, Enter Multireddit, Enter Manual, All domains,
+     Subreddit Discovery, Gaming Discovery   """
     oc = ObjectContainer()
-
     # Videos Menu
     if Prefs['show_videos']:
-        oc.add(DirectoryObject
-              (key=Callback(view_sort,
-                            url='http://www.reddit.com/r/videos/.json'),
-               title='Videos Subreddit'))
-
+        oc.add(DirectoryObject(key=Callback(view_sort, url=SUBREDDIT_BASE % 'videos'),
+               title='Videos Subreddit', summary='This is the most popular r/videos subreddit.'))
     # Custom Favorites Menu
     if Prefs['show_custom_favorites']:
-        oc.add(DirectoryObject
-              (key=Callback(custom_favorites),
-               title='Custom Favorites',
-               summary='This is where you can store your favorite subreddits', ))
-
+        oc.add(DirectoryObject(key=Callback(custom_favorites),
+               title='Custom Favorites', summary='Store your favorite subreddits'))
     # Enter Multireddit
     if Prefs['show_enter_multireddit']:
-        oc.add(DirectoryObject
-              (key=Callback(enter_multireddit),
-               title='Enter a multireddit',
-               summary='By creating a multireddit on reddit, you can maintain your favorite subreddits online.', ))
-
+        oc.add(DirectoryObject(key=Callback(enter_multireddit),
+               title='Enter a multireddit', summary='Add a favorite multireddit.'))
     # Enter Manual Menu
     if Prefs['show_enter_manual']:
-        oc.add(InputDirectoryObject
-              (key=Callback(enter_manual),
+        oc.add(InputDirectoryObject(key=Callback(enter_manual),
                title='Enter a subreddit',
                summary='Manually entered subreddits are not saved. Enter the name of a subreddit.' +
-               '\nDo not include "r/".  e.g., "r/videos" should be entered as "videos"',
-               prompt="enter the name of a subreddit"))
-
+                       '\nDo not include "r/".  e.g., "r/videos" should be entered as "videos"',
+               prompt="Enter the name of a subreddit"))
     # Search Reddit
     if Prefs['show_search_reddit']:
-        oc.add(InputDirectoryObject
-              (key=Callback(domain_search),
-               title='Search Reddit',
-               summary='This will search all youtube videos uploaded to reddit.',
-               prompt="enter your search term"))
-
+        oc.add(InputDirectoryObject(key=Callback(domain_search),
+               title='Search Reddit',  summary='This will search all youtube videos uploaded to reddit.',
+               prompt="Enter your search term"))
     # All Domains Menu
     if Prefs['show_domains']:
-        oc.add(DirectoryObject
-              (key=Callback(get_domains),
-               title='All Domains',
-               summary='This is a neat trick with reddit.  You can view the top videos regardless of' +
-               ' what subreddit they are in just by the domain they come from.'))
-
+        oc.add(DirectoryObject(key=Callback(get_domains),
+               title='All Domains', summary='Lists the most popular videos from a domain like Youtube regardless' +
+                                            'of what subreddit it came from.'))
     # Subreddit Discovery Menu
     if Prefs['show_subreddit_discovery']:
-        oc.add(DirectoryObject
-              (key=Callback(subreddit_discovery,
-                            url="http://www.reddit.com/user/seagullcanfly/m/plexsubreddits"),
-               title="Subreddit Discovery",
-               summary="This is an automatic list maintained by u/seagullcanfly."))
-
+        oc.add(DirectoryObject(key=Callback(subreddit_discovery, url=SUBREDDIT_DISCOVERY_URL),
+               title="Subreddit Discovery", summary="A collection of subreddits maintained by u/seagullcanfly."))
     # Gaming Subreddits
     if Prefs['show_gaming_subreddits']:
-        oc.add(DirectoryObject
-              (key=Callback(subreddit_discovery,
-                            url="http://www.reddit.com/user/seagullcanfly/m/gamingvideos"),
-               title="Gaming Subreddits",
-               summary="A collection of gaming subreddits."))
-
+        oc.add(DirectoryObject(key=Callback(subreddit_discovery, url=GAMING_URL),
+               title="Gaming Subreddits", summary="A collection of gaming subreddits."))
     # Preferences
     oc.add(PrefsObject
-          (title='Change channel settings'))
-
+          (title='Change channel settings', summary="Customize the menus, and enable scores or comments."))
     return oc
 
 ###############################################  MULTIREDDITS  ######################################################
 
 
 def subreddit_discovery(url):
-    """ subreddit_discovery automatically pulls a maintained list of popular subreddits
-        from a published multireddit."""
+    """ subreddit_discovery polls a maintained list of popular subreddits from a published multireddit."""
     oc = ObjectContainer()
-    oc.add(DirectoryObject
-          (key=Callback(videos,
-                        url=url + ".json"),
-           title="All Subreddits Combined.."))
+    oc.add(DirectoryObject(key=Callback(videos, url=url + ".json"), title="All Subreddits Combined.."))
     content = HTML.ElementFromURL(url)
     multi_subreddits = content.xpath('//ul[@class="subreddits"]//li/a/text()')
     clean_subreddits = []
@@ -122,128 +101,78 @@ def subreddit_discovery(url):
         clean_subreddits.append(sub.title())
     subreddits = clean_subreddits
     for subreddit in sorted(subreddits):
-        url = 'http://www.reddit.com/r/%s/.json' % subreddit
+        url = SUBREDDIT_BASE % subreddit
         title = 'r/%s' % subreddit
-        oc.add(DirectoryObject
-              (key=Callback(view_sort,
-                            url=url),
-               title=title))
+        oc.add(DirectoryObject(key=Callback(view_sort, url=url), title=title))
     return oc
 
 
 def enter_multireddit():
-    """ Has the following menus:
-          Add a Multireddit
-          Delete a Multireddit
-          Custom Favorites Populated """
+    """ Has the following menus: Add a Multireddit, Delete a Multireddit, Custom Favorites Populated """
     oc = ObjectContainer()
-    # if no multireddits exist, the directory should show instructions once.
-    try:
-        multireddits = Dict['multireddits']
-    except KeyError:
+    multireddits = Dict['multireddits']
+    if not multireddits:
         Dict['multireddits'] = []
-        return ObjectContainer(header="Instructions",
-                               message="Find or create a public multireddit on reddit. " +
-                               "Remember the user name and multireddit name.")
-
-    if multireddits:
+    else:
         # List stored Multireddits
         for user, multi in multireddits:
-            user = user.strip()
-            multi = multi.strip()
+            user, multi = user.strip(), multi.strip()
             url = 'http://www.reddit.com/user/%s/m/%s' % (user, multi)
             title = "%s's %s" % (user, multi)
-            oc.add(DirectoryObject
-                  (key=Callback(subreddit_discovery,
-                                url=url),
-                   title=title,
-                   summary="This is a stored multireddit."))
+            oc.add(DirectoryObject(key=Callback(subreddit_discovery, url=url),
+                   title=title, summary="This is a stored multireddit."))
 
         # Add a Multireddit
-    oc.add(InputDirectoryObject
-          (key=Callback(enter_multi),
-           title='Add a Multireddit',
-           summary='Enter the user who created the subreddit, a comma (",") followed by the name' +
-           ' of the multireddit.  For example, you could enter this without the quotation marks' +
-           ' to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
-           prompt="enter the user who created the multireddit, a comma, then the multireddit's name" +
-           "e.g., seagullcanfly, gamingvideos"))
+    oc.add(InputDirectoryObject(key=Callback(enter_multi),
+           title='Add a Multireddit', summary=MULTI_SUMMARY, prompt=MULTI_PROMPT))
 
         # Delete a Multireddit
-    oc.add(InputDirectoryObject
-           (key=Callback(delete_multi),
-            title='Delete a Multireddit',
-            summary='Enter the user who created the subreddit, a comma (",") followed by the name' +
-            ' of the multireddit.  For example, you could enter this without the quotation marks' +
-            ' to enter my gamingvideos multireddit, "seagullcanfly, gamingvideos"',
-            prompt="enter the user who created the multireddit, a comma, then the multireddit's name" +
-            "e.g., seagullcanfly, gamingvideos"))
+    oc.add(InputDirectoryObject(key=Callback(delete_multi),
+           title='Delete a Multireddit', summary=MULTI_SUMMARY, prompt=MULTI_PROMPT))
     return oc
 
 
 def enter_multi(query):
     """ This adds a user-generated multireddit in persistent storage."""
-    try:
-        multireddits = Dict['multireddits']
-    except KeyError:
-        multireddits = []
-    query = query.split(',')
-    query = (query[0], query[1])
-    if not multireddits:
-        multireddits = []
-    multireddits.append(query)
-    Dict['multireddits'] = multireddits
-    Dict.Save()
+    handle_multi(query, operation='add')
 
 
 def delete_multi(query):
     """ This deletes a user-generated multireddit from persistent storage."""
+    handle_multi(query, operation='delete')
+
+
+def handle_multi(query, operation='add'):
+    """ This adds a user-generated multireddit in persistent storage."""
     multireddits = Dict['multireddits']
     query = query.split(',')
     query = (query[0], query[1])
-    try:
+    if not multireddits:
+        multireddits = []
+    if operation == 'add':
+        multireddits.append(query)
+    else:
         multireddits.remove(query)
-    except KeyError:
-        Log('Problem with deleting multireddit from storage')
     Dict['multireddits'] = multireddits
-    Dict.Save()
 
 ####################################################################################################################
 
 
-@handler('/video/redditvideos', 'Reddit Videos')
 def view_sort(url):
-    """ Currently all videos can be sorted by hot, new, and top.  Top includes all time,
-        month, week, day, and hour."""
+    """ All videos can be sorted by hot, new, and top.  Top includes all time, year, month, week, day, and hour."""
     oc = ObjectContainer()
     url_list = url.split('.json')
-    top_url = url_list[0] + 'top/.json'
-    new_url = url_list[0] + 'new/.json'
-
+    top_url, new_url = url_list[0] + 'top/.json', url_list[0] + 'new/.json'
     # Hot
-    oc.add(DirectoryObject
-          (key=Callback(videos,
-                        url=url),
-           title="Hot"))
+    oc.add(DirectoryObject(key=Callback(videos, url=url), title="Hot"))
     # New
-    oc.add(DirectoryObject
-          (key=Callback(videos,
-                        url=new_url),
-           title="New"))
+    oc.add(DirectoryObject(key=Callback(videos, url=new_url), title="New"))
     # Top - with sortings
-    sortings = {'all': 'Top - All Time',
-                'year': 'Top - Year',
-                'month': 'Top - Month',
-                'week': 'Top - Week',
-                'day': 'Top - Day',
-                'hour': 'Top - Hour'}
+    sortings = {'all': 'Top - All Time', 'year': 'Top - Year', 'month': 'Top - Month', 'week': 'Top - Week',
+                'day': 'Top - Day', 'hour': 'Top - Hour'}
     sort_order = ['all', 'year', 'month', 'week', 'day', 'hour']
     for view in sort_order:
-        oc.add(DirectoryObject
-              (key=Callback(videos,
-                            url=top_url,
-                            sort=view),
-               title=sortings[view]))
+        oc.add(DirectoryObject(key=Callback(videos, url=top_url, sort=view), title=sortings[view]))
     return oc
 
 ####################################################################################################################
@@ -252,8 +181,6 @@ def view_sort(url):
 class VideoData:
 
     def __init__(self, video_post_data):
-        self.link = False
-        self.text = False
         self.urls = []
         self.domain = video_post_data['data'].get('domain')
         self.title = video_post_data['data'].get('title')
@@ -285,18 +212,16 @@ class VideoData:
                 start_index = text_post.find(youtube_key)
 
 
-def videos(url, count=0, limit=32, after='', sort=None):
+def videos(url, count=0, limit=100, after='', sort=None):
     """ This method returns all the video links for any specific page. """
     oc = ObjectContainer()
     url += '?count=%d&limit=%d&after=%s' % (count, limit, after)
     if sort:
         url += '&sort=top&t=%s' % sort
     search_page = JSON.ObjectFromURL(url, sleep=2.0, cacheTime=600, headers={'User-Agent': USER_AGENT})
-
     @parallelize
     def get_videos():
         for video_child in search_page['data']['children']:
-
             @task
             def get_video(video_post=video_child):
                 reddit_video = VideoData(video_post)
@@ -305,38 +230,25 @@ def videos(url, count=0, limit=32, after='', sort=None):
                 for video_url in reddit_video.urls:
                     if good_url(video_url):
                         if Prefs['show_comment_menu']:
-                            oc.add(DirectoryObject(key=Callback(commented_videos,
-                                                                video_url=video_url,
-                                                                video_id=reddit_video.id,
-                                                                video_subreddit=reddit_video.subreddit,
-                                                                video_title=video_title,
-                                                                video_summary=reddit_video.summary),
-                                                   title=video_title,
-                                                   thumb=reddit_video.thumbnail))
+                            oc.add(DirectoryObject(key=Callback(
+                                commented_videos, video_url=video_url, video_id=reddit_video.id,
+                                video_subreddit=reddit_video.subreddit, video_title=video_title,
+                                video_summary=reddit_video.summary), title=video_title, thumb=reddit_video.thumbnail))
                         else:
                             video_object = URLService.MetadataObjectForURL(video_url)
                             video_object.title = String.StripTags(video_title)
                             video_object.summary = String.StripTags(reddit_video.summary)
                             oc.add(video_object)
-
     # Find/Add Next Menu
     after = search_page['data'].get('after')
     count += limit
-
     if after:
-        oc.add(NextPageObject
-              (key=Callback(videos,
-                            url=url,
-                            count=count,
-                            limit=limit,
-                            after=after),
-               title='Next ...'))
+        oc.add(NextPageObject(key=Callback(videos, url=url, count=count, limit=limit, after=after), title='Next ...'))
     return oc
 
 
 def commented_videos(video_url, video_id, video_subreddit, video_title, video_summary):
-    """If turned on in the channel's preferences, another menu level will be created that
-    shows the top-rated comments for a video."""
+    """Shows the top-rated comments for a video dependent on preferences."""
     oc = ObjectContainer()
     video_object = URLService.MetadataObjectForURL(video_url)
     video_object.title = String.StripTags(video_title)
@@ -349,10 +261,8 @@ def commented_videos(video_url, video_id, video_subreddit, video_title, video_su
         comment_text = comment['data'].get('body')
         if not comment_text:
             comment_text = "Not yet commented on."
-        oc.add(PopupDirectoryObject(key=Callback(show_comment,
-                                                 comment=comment_text),
-                                    title=comment_text[0:20],
-                                    summary=comment_text))
+        oc.add(DirectoryObject(key=Callback(show_comment, comment=comment_text), title=comment_text[0:30] + "...",
+                               summary=comment_text))
     return oc
 
 
@@ -363,64 +273,46 @@ def show_comment(comment):
 
 
 def custom_favorites():
-    """ Has the following menus:
-          Add a Custom Favorite
-          Delete a Custom Favorite
-          Custom Favorites Populated"""
+    """ Has the following menus: Add a Custom Favorite, Delete a Custom Favorite, Custom Favorites Populated"""
     oc = ObjectContainer()
-
     # Add a Custom Favorite
-    oc.add(InputDirectoryObject
-          (key=Callback(enter_favorite),
-           title='Add a Custom Favorite',
-           summary='Enter the name of a subreddit.\nDo not include "r/".  e.g., "r/videos"' +
-           ' should be entered as "videos."',
-           prompt="Enter the name of a subreddit"))
-
+    oc.add(InputDirectoryObject(key=Callback(enter_favorite),
+           title='Add a Custom Favorite', summary=FAVORITES_SUMMARY, prompt=FAVORITES_PROMPT))
     # Delete a Custom Favorite
-    oc.add(InputDirectoryObject
-          (key=Callback(delete_favorite),
-           title='Delete a Custom Favorite',
-           summary='Enter the name of a subreddit.\nDo not include "r/".  e.g., "r/videos"' +
-           ' should be entered as "videos."',
-           prompt="Enter the name of a subreddit"))
-
+    oc.add(InputDirectoryObject(key=Callback(delete_favorite),
+           title='Delete a Custom Favorite', summary=FAVORITES_SUMMARY, prompt=FAVORITES_PROMPT))
     # Custom Favorites
-    try:
-        custom_faves = Dict['favorites']
-    except KeyError:
+    custom_faves = Dict['favorites']
+    if not custom_faves:
         custom_faves = ['enterfavoritesubreddits']
         Dict['favorites'] = custom_faves
     for subreddit in custom_faves:
-        url = 'http://www.reddit.com/r/%s/.json' % subreddit
+        url = SUBREDDIT_BASE % subreddit
         title = 'r/%s' % subreddit
-        oc.add(DirectoryObject
-              (key=Callback(view_sort,
-                            url=url),
-               title=title))
+        oc.add(DirectoryObject(key=Callback(view_sort, url=url), title=title))
     return oc
 
 
 def enter_favorite(query):
     """ This adds a user-generated subreddit in persistent storage."""
-    try:
-        custom_faves = Dict['favorites']
-    except KeyError:
-        custom_faves = []
-    custom_faves.append(query)
-    Dict['favorites'] = custom_faves
-    Dict.Save()
+    handle_favorites(query, 'add')
 
 
 def delete_favorite(query):
     """ This deletes a user-generated subreddit from persistent storage."""
-    current_list = Dict['favorites']
-    try:
-        current_list.remove(query)
-    except ValueError:
-        Log('subreddit was not already stored as a favorite')
-    Dict['favorites'] = current_list
-    Dict.Save()
+    handle_favorites(query, 'delete')
+
+
+def handle_favorites(query, operation):
+    """ Mains favorites in the persistent dictionary."""
+    favorites = Dict['favorites']
+    if not favorites:
+        favorites = []
+    if operation == 'add':
+        favorites.append(query)
+    else:
+        favorites.remove(query)
+    Dict['favorites'] = favorites
 
 ###############################################  DOMAINS  ##########################################################
 
@@ -432,10 +324,7 @@ def get_domains():
     for domain in sorted(domain_list):
         url = 'http://www.reddit.com/domain/%s/.json' % domain
         title = 'domain/' + domain
-        oc.add(DirectoryObject
-              (key=Callback(videos,
-                            url=url),
-               title=title))
+        oc.add(DirectoryObject(key=Callback(videos, url=url), title=title))
     return oc
 
 ###############################################  SEARCH  ###########################################################
@@ -446,10 +335,7 @@ def domain_search(query):
     oc = ObjectContainer()
     search_url = "http://www.reddit.com/domain/youtube.com/search.json?q=%s&restrict_sr=on" % query
     title = 'Searching for "%s"....' % query
-    oc.add(DirectoryObject
-          (key=Callback(videos,
-                        url=search_url),
-           title=title))
+    oc.add(DirectoryObject(key=Callback(videos, url=search_url), title=title))
     return oc
 
 ###############################################  MANUAL  ###########################################################
@@ -458,10 +344,7 @@ def domain_search(query):
 def enter_manual(query):
     """ enter_manual allows a user to enter a subreddit manually."""
     oc = ObjectContainer()
-    url = 'http://www.reddit.com/r/%s/.json' % query
+    url = SUBREDDIT_BASE % query
     title = 'r/' + query
-    oc.add(DirectoryObject
-          (key=Callback(view_sort,
-                        url=url),
-           title=title))
+    oc.add(DirectoryObject(key=Callback(view_sort, url=url), title=title))
     return oc
