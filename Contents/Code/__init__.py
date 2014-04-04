@@ -31,22 +31,15 @@ def Start():
 
 @handler('/video/redditvideos', 'Reddit Videos')
 def MainMenu():
-    """ Creates the following menu:
-          Videos
-          Custom Favorites
-          Enter Multireddit
-          Enter Manual
-          All domains
-          Subreddit Discovery
-          Gaming Discovery   """
+    """ Creates the following menus: Videos, Custom Favorites, Enter Multireddit, Enter Manual
+        All domains, Subreddit Discovery, Gaming Discovery   """
     oc = ObjectContainer()
 
     # Videos Menu
     if Prefs['show_videos']:
         oc.add(DirectoryObject
               (key=Callback(view_sort,
-                            url='http://www.reddit.com/r/videos/.json',
-                            title='Videos Subreddit'),
+                            url='http://www.reddit.com/r/videos/.json'),
                title='Videos Subreddit'))
 
     # Custom Favorites Menu
@@ -102,7 +95,7 @@ def MainMenu():
               (key=Callback(subreddit_discovery,
                             url="http://www.reddit.com/user/seagullcanfly/m/gamingvideos"),
                title="Gaming Subreddits",
-               summary="This is an automatic list maintained by u/seagullcanfly."))
+               summary="A collection of gaming subreddits."))
 
     # Preferences
     oc.add(PrefsObject
@@ -119,9 +112,7 @@ def subreddit_discovery(url):
     oc = ObjectContainer()
     oc.add(DirectoryObject
           (key=Callback(videos,
-                        url=url + ".json",
-                        title="All Subreddits Combined..",
-                        limit=100),
+                        url=url + ".json"),
            title="All Subreddits Combined.."))
     content = HTML.ElementFromURL(url)
     multi_subreddits = content.xpath('//ul[@class="subreddits"]//li/a/text()')
@@ -135,9 +126,7 @@ def subreddit_discovery(url):
         title = 'r/%s' % subreddit
         oc.add(DirectoryObject
               (key=Callback(view_sort,
-                            url=url,
-                            title=title,
-                            limit=100),
+                            url=url),
                title=title))
     return oc
 
@@ -222,7 +211,8 @@ def delete_multi(query):
 ####################################################################################################################
 
 
-def view_sort(url, title, limit=100):
+@handler('/video/redditvideos', 'Reddit Videos')
+def view_sort(url):
     """ Currently all videos can be sorted by hot, new, and top.  Top includes all time,
         month, week, day, and hour."""
     oc = ObjectContainer()
@@ -233,16 +223,12 @@ def view_sort(url, title, limit=100):
     # Hot
     oc.add(DirectoryObject
           (key=Callback(videos,
-                        url=url,
-                        title=title + ":  Hot",
-                        limit=limit),
+                        url=url),
            title="Hot"))
     # New
     oc.add(DirectoryObject
           (key=Callback(videos,
-                        url=new_url,
-                        title=title + ":  New",
-                        limit=100),
+                        url=new_url),
            title="New"))
     # Top - with sortings
     sortings = {'all': 'Top - All Time',
@@ -256,8 +242,6 @@ def view_sort(url, title, limit=100):
         oc.add(DirectoryObject
               (key=Callback(videos,
                             url=top_url,
-                            title=sortings[view],
-                            limit=100,
                             sort=view),
                title=sortings[view]))
     return oc
@@ -265,11 +249,45 @@ def view_sort(url, title, limit=100):
 ####################################################################################################################
 
 
-def videos(url, title, count=0, limit=25, after='', sort=None):
-    """ This method returns all the video links for any specific page.  It now also
-    permits a text search if there is no link available.  It currently only works for
-    youtube videos.  The .find methods need to be replaced with regular expressions."""
-    oc = ObjectContainer(title2=title)
+class VideoData:
+
+    def __init__(self, video_post_data):
+        self.link = False
+        self.text = False
+        self.urls = []
+        self.domain = video_post_data['data'].get('domain')
+        self.title = video_post_data['data'].get('title')
+        self.score = str(video_post_data['data'].get('score'))
+        self.id = str(video_post_data['data'].get('id'))
+        self.subreddit = video_post_data['data'].get('subreddit')
+        self.thumbnail = video_post_data['data'].get('thumbnail')
+        self.nsfw = video_post_data['data'].get('over_18')  # working on this
+        if self.domain in ['youtube.com', 'vimeo.com']:
+            try:
+                self.summary = video_post_data['data']['media']['oembed'].get('description')
+            except AttributeError:
+                self.summary = self.title
+            self.urls = [video_post_data['data'].get('url')]
+        if video_post_data['data'].get('is_self'):
+            self.summary = video_post_data['data']['selftext']
+            text_post = self.summary
+            youtube_prefix = 'http://www.'
+            youtube_key = 'youtube.com/watch?v='
+            youtube_length = len(youtube_key) + 11
+            start_index = text_post.find(youtube_key)
+            while start_index > 0:
+                text_post = text_post[start_index::]
+                end_index = youtube_length
+                vid_url = youtube_prefix + text_post[:end_index]
+                if vid_url not in self.urls and good_url(vid_url):
+                    self.urls.append(vid_url)
+                text_post = text_post[end_index::]
+                start_index = text_post.find(youtube_key)
+
+
+def videos(url, count=0, limit=32, after='', sort=None):
+    """ This method returns all the video links for any specific page. """
+    oc = ObjectContainer()
     url += '?count=%d&limit=%d&after=%s' % (count, limit, after)
     if sort:
         url += '&sort=top&t=%s' % sort
@@ -277,70 +295,29 @@ def videos(url, title, count=0, limit=25, after='', sort=None):
 
     @parallelize
     def get_videos():
+        for video_child in search_page['data']['children']:
 
-        video_posts = search_page['data']['children']
-        if video_posts:
-            for video_child in video_posts:
-
-                @task
-                def get_video(video_post=video_child):
-                    video_urls = None
-                    accepted_domains = ['youtube.com', 'vimeo.com']
-                    post_domain = video_post['data'].get('domain')
-                    self_text = video_post['data'].get('is_self')
-                    if post_domain in accepted_domains:
-                        video_urls = [video_post['data'].get('url')]
-                        if video_post:
-                            Log(video_post)
-                            video_summary = video_post['data']['media']['oembed'].get('description')
-                            Log(video_summary)
-                    elif self_text == 'true':
-                        text_post = video_post['data']['selftext_html']
-                        video_summary = text_post
-                        video_urls = []
-                        youtube_prefix = 'http://www.'
-                        youtube_key = 'youtube.com/watch?v='
-                        youtube_length = len(youtube_key) + 11
-                        start_index = text_post.find(youtube_key)
-                        while start_index > 0:
-                            text_post = text_post[start_index::]
-                            end_index = youtube_length
-                            vid_url = youtube_prefix + text_post[:end_index]
-                            if vid_url not in video_urls:
-                                video_urls.append(vid_url)
-                            text_post = text_post[end_index::]
-                            start_index = text_post.find(youtube_key)
-                    if video_urls:
-                        # Get video title
-                        video_title = video_post['data'].get('title')
-                        video_score = str(video_post['data'].get('score'))
-                        video_id = str(video_post['data'].get('id'))
-                        video_subreddit = str(video_post['data'].get('subreddit'))
-                        video_thumbnail = str(video_post['data'].get('thumbnail'))
-                        #  video_over_18 =  child['data'].get('over_18') # working on this
-                        if video_title:
-                            video_title = String.StripTags(video_title)
+            @task
+            def get_video(video_post=video_child):
+                reddit_video = VideoData(video_post)
+                if Prefs['show_score']:
+                    video_title = reddit_video.score + " | " + reddit_video.title
+                for video_url in reddit_video.urls:
+                    if good_url(video_url):
+                        if Prefs['show_comment_menu']:
+                            oc.add(DirectoryObject(key=Callback(commented_videos,
+                                                                video_url=video_url,
+                                                                video_id=reddit_video.id,
+                                                                video_subreddit=reddit_video.subreddit,
+                                                                video_title=video_title,
+                                                                video_summary=reddit_video.summary),
+                                                   title=video_title,
+                                                   thumb=reddit_video.thumbnail))
                         else:
-                            video_title = "We don't see a title."
-                        if Prefs['show_score']:
-                            video_title = video_score + " | " + video_title
-
-                        for video_url in video_urls:
-                            if good_url(video_url):
-                                if Prefs['show_comment_menu']:
-                                    oc.add(DirectoryObject(key=Callback(commented_videos,
-                                                                        video_url=video_url,
-                                                                        video_id=video_id,
-                                                                        video_subreddit=video_subreddit,
-                                                                        video_title=video_title,
-                                                                        video_summary=video_summary),
-                                                           title=video_title,
-                                                           thumb=video_thumbnail))
-                                else:
-                                    video_object = URLService.MetadataObjectForURL(video_url)
-                                    video_object.title = String.StripTags(video_title)
-                                    video_object.summary = String.StripTags(video_summary)
-                                    oc.add(video_object)
+                            video_object = URLService.MetadataObjectForURL(video_url)
+                            video_object.title = String.StripTags(video_title)
+                            video_object.summary = String.StripTags(reddit_video.summary)
+                            oc.add(video_object)
 
     # Find/Add Next Menu
     after = search_page['data'].get('after')
@@ -350,7 +327,6 @@ def videos(url, title, count=0, limit=25, after='', sort=None):
         oc.add(NextPageObject
               (key=Callback(videos,
                             url=url,
-                            title=title,
                             count=count,
                             limit=limit,
                             after=after),
@@ -374,10 +350,11 @@ def commented_videos(video_url, video_id, video_subreddit, video_title, video_su
         if not comment_text:
             comment_text = "Not yet commented on."
         oc.add(PopupDirectoryObject(key=Callback(show_comment,
-                                            comment=comment_text),
-                               title=comment_text,
-                               summary=comment_text))
+                                                 comment=comment_text),
+                                    title=comment_text[0:20],
+                                    summary=comment_text))
     return oc
+
 
 def show_comment(comment):
     return ObjectContainer(header='Video Comment', message=comment)
@@ -419,8 +396,7 @@ def custom_favorites():
         title = 'r/%s' % subreddit
         oc.add(DirectoryObject
               (key=Callback(view_sort,
-                            url=url,
-                            title=title),
+                            url=url),
                title=title))
     return oc
 
@@ -458,8 +434,7 @@ def get_domains():
         title = 'domain/' + domain
         oc.add(DirectoryObject
               (key=Callback(videos,
-                            url=url,
-                            title=title),
+                            url=url),
                title=title))
     return oc
 
@@ -473,8 +448,7 @@ def domain_search(query):
     title = 'Searching for "%s"....' % query
     oc.add(DirectoryObject
           (key=Callback(videos,
-                        url=search_url,
-                        title=title),
+                        url=search_url),
            title=title))
     return oc
 
@@ -488,7 +462,6 @@ def enter_manual(query):
     title = 'r/' + query
     oc.add(DirectoryObject
           (key=Callback(view_sort,
-                        url=url,
-                        title=title),
+                        url=url),
            title=title))
     return oc
