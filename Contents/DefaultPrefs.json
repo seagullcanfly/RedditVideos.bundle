@@ -50,7 +50,7 @@
   {
         "id": "show_score",
         "type": "bool",
-        "label": "Let the title of the video be prefaced with upvote count?",
+        "label": "Enable upvote counts in title?",
         "default": "true"
   }
   ,
