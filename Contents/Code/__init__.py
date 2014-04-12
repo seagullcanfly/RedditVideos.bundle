@@ -72,7 +72,7 @@ def MainMenu():
     if Prefs['show_domains']:
         oc.add(DirectoryObject(key=Callback(get_domains),
                title='All Domains', summary='Lists the most popular videos from a domain like Youtube regardless' +
-                                            'of what subreddit it came from.'))
+                                            'of what subreddit they come from.'))
     # Subreddit Discovery Menu
     if Prefs['show_subreddit_discovery']:
         oc.add(DirectoryObject(key=Callback(subreddit_discovery, url=SUBREDDIT_DISCOVERY_URL),
@@ -163,11 +163,8 @@ def view_sort(url):
     oc = ObjectContainer()
     url_list = url.split('.json')
     top_url, new_url = url_list[0] + 'top/.json', url_list[0] + 'new/.json'
-    # Hot
     oc.add(DirectoryObject(key=Callback(videos, url=url), title="Hot"))
-    # New
     oc.add(DirectoryObject(key=Callback(videos, url=new_url), title="New"))
-    # Top - with sortings
     sortings = {'all': 'Top - All Time', 'year': 'Top - Year', 'month': 'Top - Month', 'week': 'Top - Week',
                 'day': 'Top - Day', 'hour': 'Top - Hour'}
     sort_order = ['all', 'year', 'month', 'week', 'day', 'hour']
@@ -275,16 +272,13 @@ def show_comment(comment):
 def custom_favorites():
     """ Has the following menus: Add a Custom Favorite, Delete a Custom Favorite, Custom Favorites Populated"""
     oc = ObjectContainer()
-    # Add a Custom Favorite
     oc.add(InputDirectoryObject(key=Callback(enter_favorite),
            title='Add a Custom Favorite', summary=FAVORITES_SUMMARY, prompt=FAVORITES_PROMPT))
-    # Delete a Custom Favorite
     oc.add(InputDirectoryObject(key=Callback(delete_favorite),
            title='Delete a Custom Favorite', summary=FAVORITES_SUMMARY, prompt=FAVORITES_PROMPT))
-    # Custom Favorites
     custom_faves = Dict['favorites']
     if not custom_faves:
-        custom_faves = ['enterfavoritesubreddits']
+        custom_faves = ['enterfavorites']
         Dict['favorites'] = custom_faves
     for subreddit in custom_faves:
         url = SUBREDDIT_BASE % subreddit
