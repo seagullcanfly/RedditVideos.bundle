@@ -46,5 +46,18 @@
         "type": "bool",
         "label": "Show the Gaming Subreddits menu?",
         "default": "true"
+  },
+  {
+        "id": "show_score",
+        "type": "bool",
+        "label": "Enable upvote counts in title?",
+        "default": "true"
+  }
+  ,
+  {
+        "id": "show_comment_menu",
+        "type": "bool",
+        "label": "Enable the extra comment menu?",
+        "default": "false"
   }
 ]
