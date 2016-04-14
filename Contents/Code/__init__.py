@@ -21,9 +21,9 @@ e.g., seagullcanfly, gamingvideos'''
 FAVORITES_SUMMARY = ''''Enter the name of a subreddit.
 Do not include "r/".  e.g., "r/videos" should be entered as "videos."'''
 FAVORITES_PROMPT = '''Enter the name of a subreddit.'''
-SUBREDDIT_DISCOVERY_URL = "http://www.reddit.com/user/seagullcanfly/m/plexsubreddits"
-GAMING_URL = "http://www.reddit.com/user/seagullcanfly/m/gamingvideos"
-SUBREDDIT_BASE = 'http://www.reddit.com/r/%s/.json'
+SUBREDDIT_DISCOVERY_URL = "https://www.reddit.com/user/seagullcanfly/m/plexsubreddits"
+GAMING_URL = "https://www.reddit.com/user/seagullcanfly/m/gamingvideos"
+SUBREDDIT_BASE = 'https://www.reddit.com/r/%s/.json'
 
 
 def good_url(url):
@@ -117,7 +117,7 @@ def enter_multireddit():
         # List stored Multireddits
         for user, multi in multireddits:
             user, multi = user.strip(), multi.strip()
-            url = 'http://www.reddit.com/user/%s/m/%s' % (user, multi)
+            url = 'https://www.reddit.com/user/%s/m/%s' % (user, multi)
             title = "%s's %s" % (user, multi)
             oc.add(DirectoryObject(key=Callback(subreddit_discovery, url=url),
                    title=title, summary="This is a stored multireddit."))
@@ -195,7 +195,7 @@ class VideoData:
         if video_post_data['data'].get('is_self'):
             self.summary = video_post_data['data']['selftext']
             text_post = self.summary
-            youtube_prefix = 'http://www.'
+            youtube_prefix = 'https://www.'
             youtube_key = 'youtube.com/watch?v='
             youtube_length = len(youtube_key) + 11
             start_index = text_post.find(youtube_key)
@@ -234,7 +234,6 @@ def videos(url, count=0, limit=100, after='', sort=None):
                         else:
                             video_object = URLService.MetadataObjectForURL(video_url)
                             video_object.title = String.StripTags(video_title)
-                            video_object.summary = String.StripTags(reddit_video.summary)
                             oc.add(video_object)
     # Find/Add Next Menu
     after = search_page['data'].get('after')
@@ -251,7 +250,7 @@ def commented_videos(video_url, video_id, video_subreddit, video_title, video_su
     video_object.title = String.StripTags(video_title)
     video_object.summary = String.StripTags(video_summary)
     oc.add(video_object)
-    comment_url = 'http://www.reddit.com/r/' + video_subreddit + '/' + video_id + '.json'
+    comment_url = 'https://www.reddit.com/r/' + video_subreddit + '/' + video_id + '.json'
     comment_page = JSON.ObjectFromURL(comment_url, sleep=2.0, cacheTime=600, headers={'User-Agent': USER_AGENT})
     comments = comment_page[1]['data']['children']
     for comment in comments:
@@ -316,7 +315,7 @@ def get_domains():
     oc = ObjectContainer()
     domain_list = ['youtube.com', 'vimeo.com']
     for domain in sorted(domain_list):
-        url = 'http://www.reddit.com/domain/%s/.json' % domain
+        url = 'https://www.reddit.com/domain/%s/.json' % domain
         title = 'domain/' + domain
         oc.add(DirectoryObject(key=Callback(videos, url=url), title=title))
     return oc
@@ -327,7 +326,7 @@ def get_domains():
 def domain_search(query):
     """ domain_search searches for any video uploaded to reddit on youtube that matches the query."""
     oc = ObjectContainer()
-    search_url = "http://www.reddit.com/domain/youtube.com/search.json?q=%s&restrict_sr=on" % query
+    search_url = "https://www.reddit.com/domain/youtube.com/search.json?q=%s&restrict_sr=on" % query
     title = 'Searching for "%s"....' % query
     oc.add(DirectoryObject(key=Callback(videos, url=search_url), title=title))
     return oc
